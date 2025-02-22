@@ -12,7 +12,7 @@ Game::Game() {
 
 bool Game::init() {
 	running = true;
-	player = new GameObject(100, 100, 50, 50, renderer, "resources/Heroes/Man/Naked/Idle.png");
+
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow("window", 800, 600, SDL_WINDOW_RESIZABLE);
 	if (!window) {
@@ -20,6 +20,9 @@ bool Game::init() {
 		return false;  // Exit if window creation fails
 	}
 	renderer = SDL_CreateRenderer(window, NULL);
+
+	player = new GameObject(100, 100, 50, 50, renderer, "C:/Users/prwil/source/repos/pwilly1/cppproject/resources/Heroes/Man/Naked/Idle.png");
+
 	return true;
 }
 
@@ -32,8 +35,8 @@ Game::~Game() {
 void Game::render() {
 
 	SDL_SetRenderDrawColor(renderer, 60, 34, 15, 255);
-	SDL_RenderClear(renderer);
 
+	SDL_RenderClear(renderer);
 	player->render(renderer);
 
 	SDL_RenderPresent(renderer);
@@ -63,18 +66,17 @@ void Game::handleEvents() {
 
 			SDL_Keycode key = event.key.key;
 
-			if (key == SDLK_W) {
-				std::cout << "w key pressed\n";
-			}
+			if (key == SDLK_W) { player->setVelocity(0, -player->getSpeed()); std::cout << "W key press test"; }
 			if (key == SDLK_S) {
-				std::cout << "S key pressed\n";
-			}
-			if (key == SDLK_D) {
-				std::cout << "d key pressed\n";
+				player->setVelocity(0, player->getSpeed()); // Move down
 			}
 			if (key == SDLK_A) {
-				std::cout << "a key pressed\n";
+				player->setVelocity(-player->getSpeed(), 0); // Move left
 			}
+			if (key == SDLK_D) {
+				player->setVelocity(player->getSpeed(), 0); // Move right
+			}
+
 			if (key == SDLK_ESCAPE) {
 				std::cout << "Escape key pressed. Exiting game...\n";
 				running = false;
@@ -82,8 +84,9 @@ void Game::handleEvents() {
 		}
 		if (event.type == SDL_EVENT_KEY_UP) {
 			SDL_Keycode key = event.key.key;
+			if (key == SDLK_W || key == SDLK_S) player->setVelocity(player->getdx(), 0);
+			if (key == SDLK_A || key == SDLK_D) player->setVelocity(0, player->getdy());
 
-			std::cout << "Key Released: " << SDL_GetKeyName(key) << std::endl;
 		}
 
 	}
@@ -100,8 +103,14 @@ void Game::cleanup() {
 }
 
 void Game::run() {
+	Uint64 lastTime = SDL_GetTicks();
+
 	while (running) {
+		Uint64 currentTime= SDL_GetTicks();
+		float deltaTime = (currentTime - lastTime) / 1000.0f;
+		lastTime = currentTime;
 		handleEvents();
+		player->update(deltaTime);
 		render();
 		
 	}

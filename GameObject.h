@@ -13,13 +13,19 @@ public:
     void update(float deltaTime);  //  Updates movement
     void render(SDL_Renderer* renderer); //  Draws the object
     void setVelocity(int dx, int dy); // Sets movement speed
+    int getSpeed() const { return speed; }
+    int getdx() { return dx; }
+    int getdy() { return dy; }
+
 
 private:
+    SDL_FRect srcRect;  // Source rectangle for cropping the sprite sheet
+    SDL_FRect destRect;
     int x, y; //  Position
     int width, height; //  Size
     int dx, dy; //  Velocity
     SDL_Texture* texture;  // Store the image texture
-
+    int speed;
 };
 
 #endif
