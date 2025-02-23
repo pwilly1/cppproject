@@ -17,6 +17,10 @@ public:
 	void cleanup();
 
 private:
+	int screenWidth;
+	int screenHeight;
+	int winw, winh;
+	SDL_Texture* backgroundTexture;
 	GameObject* player;
 	SDL_Event event;
 	SDL_Renderer* renderer;

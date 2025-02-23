@@ -3,12 +3,14 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <iostream>
+#include <cmath>
+
 
 class GameObject {
 
 public:
 
-    GameObject(int x, int y, int w, int h, SDL_Renderer* renderer, const std::string& imagePath);
+    GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath);
     ~GameObject();
     void update(float deltaTime);  //  Updates movement
     void render(SDL_Renderer* renderer); //  Draws the object
@@ -16,12 +18,21 @@ public:
     int getSpeed() const { return speed; }
     int getdx() { return dx; }
     int getdy() { return dy; }
+    bool getIsJumping();
+    void jump();
+    bool isOnGround();
+    void SetGroundLevel();
+    
 
 
 private:
+    bool isJumping = false;
+    float jumpPower = 300;
+    const float gravity = 400;
+    float groundLevel = 400.0;
     SDL_FRect srcRect;  // Source rectangle for cropping the sprite sheet
     SDL_FRect destRect;
-    int x, y; //  Position
+    float x, y; //  Position
     int width, height; //  Size
     int dx, dy; //  Velocity
     SDL_Texture* texture;  // Store the image texture
