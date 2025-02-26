@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Game.h"
 #include "GameObject.h"
+#include "World.h" 
 
 
 Game::Game() {
@@ -15,37 +16,24 @@ bool Game::init() {
 
 	SDL_Init(SDL_INIT_VIDEO);
 
-	SDL_DisplayID displayID = SDL_GetPrimaryDisplay();
 
-	//  Get pointer to display mode (SDL3 version)
-	const SDL_DisplayMode* displayMode = SDL_GetCurrentDisplayMode(displayID);
-
-	//  Check if it failed
-	if (!displayMode) {
-		std::cout << "Failed to get display mode: " << SDL_GetError() << std::endl;
-		return false;
-	}
-
-	screenWidth = displayMode->w;
-	screenHeight = displayMode->h;
 
 	
-	window = SDL_CreateWindow("My Game", 600, 800, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("My Game", 800, 800, SDL_WINDOW_RESIZABLE);
 	if (!window) {
 		std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
 		return false;  // Exit if window creation fails
 	}
 	renderer = SDL_CreateRenderer(window, NULL);
+	screenWidth = 800;
+	screenHeight = 800;
+	SDL_SetRenderLogicalPresentation(renderer, 800, 800, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 
-	SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+	world = new World(renderer);
+	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	backgroundTexture = IMG_LoadTexture(renderer, "../../../resources/Cave Tiles/Cave Tiles.png");
-	if (!backgroundTexture) {
-		std::cout << "Failed to load background: " << SDL_GetError() << std::endl;
-	}
-
-	player = new GameObject(100, 100, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
+	player = new GameObject(400, 400, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
 
 	return true;
 }
@@ -61,21 +49,8 @@ void Game::render() {
 	SDL_SetRenderDrawColor(renderer, 60, 34, 15, 255);
 	SDL_RenderClear(renderer);
 
-	SDL_FRect srcTile = { 16, 16, 16, 16 };  // (X, Y, Width, Height) in the tileset
+	world->render(renderer, cameraX, cameraY, screenWidth, screenHeight);
 
-	// Fill the entire screen with the tile
-	for (int i = 0; i < screenWidth; i += 16) {  // Loop through screen width
-		for (int j = 0; j < screenHeight; j += 16) {  // Loop through screen height
-			SDL_FRect destTile = { i, j, 16, 16 };  // Position for each tile
-			SDL_RenderTexture(renderer, backgroundTexture, &srcTile, &destTile);
-		}
-	}
-
-	SDL_FRect floorRect = { 0, 400, 800, 200 };  // Floor rectangle
-	if (SDL_SetRenderDrawColor(renderer, 100, 50, 20, 255) == false) {
-		std::cout << "fail render";
-	}
-	SDL_RenderFillRect(renderer, &floorRect);
 
 	player->render(renderer);
 
@@ -90,17 +65,15 @@ void Game::handleEvents() {
 
 
 		if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-			int newWidth, newHeight;
-			SDL_GetWindowSize(window, &newWidth, &newHeight);
+			
+			SDL_GetWindowSize(window, &screenWidth, &screenHeight);
 
 			//  Maintain proper aspect ratio on resize
-			SDL_SetRenderLogicalPresentation(renderer, newWidth, newHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+			SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 
-			std::cout << "Window resized to: " << newWidth << "x" << newHeight << std::endl;
+			std::cout << "Window resized to: " << screenWidth << "x" << screenHeight << std::endl;
 		}
 	
-
-
 
 		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			SDL_MouseButtonFlags button = event.button.button;
@@ -159,6 +132,7 @@ void Game::handleEvents() {
 
 void Game::cleanup() {
 	delete player;
+	delete world;
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -174,10 +148,22 @@ void Game::run() {
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		handleEvents();
-		player->update(deltaTime);
+		update(deltaTime);
 		render();
 		
 	}
-	cleanup();
+	cleanup();	
+}
+
+void Game::update(float deltaTime) {
+	player->update(deltaTime);
+
+	// Move the camera based on the player's position
+	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (800 / 2);
+	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (800 / 2);
+
+	// Debugging output
+	
+
 }
 

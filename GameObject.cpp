@@ -23,11 +23,11 @@ GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& 
         std::cout << "Failed to load image: " << SDL_GetError() << std::endl;
         return;
     }
-    std::cout << "Texture loaded successfully!" << std::endl;
+    std::cout << "Object Texture loaded successfully!" << std::endl;
 
 
     float imageWidth, imageHeight;
-    std::cout << "Querying texture size..." << std::endl;
+    std::cout << "Querying Object texture size..." << std::endl;
 
     if (SDL_GetTextureSize(texture, &imageWidth, &imageHeight) != true) {
         std::cout << "Failed to get texture size: " << SDL_GetError() << std::endl;
@@ -54,6 +54,7 @@ GameObject::~GameObject() {
 
 }
 
+
 void GameObject::SetGroundLevel() {
 
 }
@@ -68,6 +69,8 @@ bool GameObject::isOnGround() {
 }
 
 void GameObject::update(float deltaTime) {
+
+
     dy += gravity * deltaTime;
 
     x += dx * deltaTime;
@@ -79,7 +82,6 @@ void GameObject::update(float deltaTime) {
         isJumping = false;
     }
 
-    std::cout << dy << std::endl;
 
     destRect.x = static_cast<int>(x);
     destRect.y = static_cast<int>(y);

@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 
+class World;
 class Game {
 public:
 
@@ -15,8 +16,12 @@ public:
 	void handleEvents();
 	void run();
 	void cleanup();
+	void update(float deltaTime);
 
 private:
+	World* world;
+	float cameraX = 0;
+	float cameraY = 0;
 	int screenWidth;
 	int screenHeight;
 	int winw, winh;

@@ -22,6 +22,10 @@ public:
     void jump();
     bool isOnGround();
     void SetGroundLevel();
+    int getX() { return x; }
+    int getY() { return y; }
+    int getPlayerHeight() { return height; }
+    int getPlayerWidth() { return width; }
     
 
 
