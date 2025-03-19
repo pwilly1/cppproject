@@ -22,6 +22,8 @@ public:
     void jump();
     bool isOnGround();
     void SetGroundLevel();
+    void setX(int x) { this->x = x; }
+    void setY(int y) { this->y = y; }
     int getX() { return x; }
     int getY() { return y; }
     int getPlayerHeight() { return height; }
@@ -33,7 +35,7 @@ private:
     bool isJumping = false;
     float jumpPower = 300;
     const float gravity = 400;
-    float groundLevel = 400.0;
+    float groundLevel = 450;
     SDL_FRect srcRect;  // Source rectangle for cropping the sprite sheet
     SDL_FRect destRect;
     float x, y; //  Position

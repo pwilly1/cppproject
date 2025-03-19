@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 #include "GameObject.h"
+#include "World.h" 
 #include <SDL3/SDL.h>
 #include <iostream>
 

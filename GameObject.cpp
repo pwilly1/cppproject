@@ -10,7 +10,7 @@ GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& 
     this->height = 0;
     this->dx = 0;
     this->dy = 0;
-    this->speed = 100;
+    this->speed = 99;
     this->texture = nullptr;
 
     if (!renderer) {
@@ -82,7 +82,6 @@ void GameObject::update(float deltaTime) {
         isJumping = false;
     }
 
-
     destRect.x = static_cast<int>(x);
     destRect.y = static_cast<int>(y);
 
@@ -98,7 +97,7 @@ void GameObject::render(SDL_Renderer* renderer) {
 	
 }
 
-void GameObject::setVelocity(int dx, int ignoreDy) {
+void GameObject::setVelocity(int dx, int dy) {
     this->dx = dx;  //  Only modify dx, not dy
 }
 

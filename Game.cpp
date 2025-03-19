@@ -1,8 +1,6 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include "Game.h"
-#include "GameObject.h"
-#include "World.h" 
 
 
 Game::Game() {
@@ -15,9 +13,6 @@ bool Game::init() {
 	running = true;
 
 	SDL_Init(SDL_INIT_VIDEO);
-
-
-
 	
 	window = SDL_CreateWindow("My Game", 800, 800, SDL_WINDOW_RESIZABLE);
 	if (!window) {
@@ -33,7 +28,7 @@ bool Game::init() {
 	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	player = new GameObject(400, 400, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
+	player = new GameObject(600, 450, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
 
 	return true;
 }
@@ -156,14 +151,70 @@ void Game::run() {
 }
 
 void Game::update(float deltaTime) {
+	// Predict the player's next position
+	float newX = player->getX() + player->getdx() * deltaTime + 0.5f;
+	float newY = player->getY() + player->getdy() * deltaTime + 0.5f;
+
+	// Convert position to tile-based coordinates
+	int tileSize = 16;
+	int leftTile = newX / tileSize;
+	int rightTile = (newX + player->getPlayerWidth() - 1) / tileSize;
+	int topTile = newY / tileSize;
+	int bottomTile = (newY + player->getPlayerHeight() - 1) / tileSize;
+
+	// Check for horizontal collision separately
+	bool collisionX =
+		world->isCollidable(leftTile, topTile) ||
+		world->isCollidable(rightTile, topTile) ||
+		world->isCollidable(leftTile, bottomTile) ||
+		world->isCollidable(rightTile, bottomTile);
+
+	// Apply movement only if no collision
+	if (!collisionX) {
+		player->setX(newX);
+	}
+	else {
+		// Resolve horizontal collision
+		if (player->getdx() > 0) { // Moving Right, push left
+			player->setX((rightTile * tileSize) - player->getPlayerWidth());
+		}
+		else if (player->getdx() < 0) { // Moving Left, push right
+			player->setX((leftTile + 1) * tileSize);
+		}
+	}
+
+	// Recalculate tile positions with the adjusted X position
+	leftTile = player->getX() / tileSize;
+	rightTile = (player->getX() + player->getPlayerWidth() - 1) / tileSize;
+
+	// Check for vertical collision separately
+	bool collisionY =
+		world->isCollidable(leftTile, topTile) ||
+		world->isCollidable(rightTile, topTile) ||
+		world->isCollidable(leftTile, bottomTile) ||
+		world->isCollidable(rightTile, bottomTile);
+
+	if (!collisionY) {
+		player->setY(newY);
+	}
+	else {
+		// Resolve vertical collision
+		if (player->getdy() > 0) { // Moving Down, push up
+			player->setY((bottomTile * tileSize) - player->getPlayerHeight());
+		}
+		else if (player->getdy() < 0) { // Moving Up, push down
+			player->setY((topTile + 1) * tileSize);
+		}
+	}
+
+	// Final position update
 	player->update(deltaTime);
 
 	// Move the camera based on the player's position
 	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (800 / 2);
 	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (800 / 2);
-
-	// Debugging output
-	
-
 }
+
+
+
 
