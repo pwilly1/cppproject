@@ -14,7 +14,6 @@ World::World(SDL_Renderer* renderer) {
 }
 
 void World::loadFromTMX(const std::string& filename) {
-
     //loading the XML doc from tmx file
     XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -24,6 +23,8 @@ void World::loadFromTMX(const std::string& filename) {
 
     //getting mapelement from tmx file map
     XMLElement* mapElement = doc.FirstChildElement("map");
+    std::cout << "map element" << mapElement << std::endl;
+
     if (!mapElement) {
         std::cout << "Error: No map element found in TMX!" << std::endl;
         return;
@@ -32,6 +33,8 @@ void World::loadFromTMX(const std::string& filename) {
     //retreiving information from mapElement
 
     mapWidth = mapElement->IntAttribute("width");
+    std::cout << "Map Width: " << mapWidth << std::endl;
+
     mapHeight = mapElement->IntAttribute("height");
     tileSize = mapElement->IntAttribute("tilewidth");
 
@@ -42,15 +45,26 @@ void World::loadFromTMX(const std::string& filename) {
     parseTileset(tilesetElement);
 
     // Parse layers
-    XMLElement* layerElement = mapElement->FirstChildElement("layer");
+    XMLElement* groupElement = mapElement->FirstChildElement("group");
+    if (!groupElement) {
+        std::cout << "No group element found." << std::endl;
+        return;
+    }
+
+    XMLElement* layerElement = groupElement->FirstChildElement("layer");
+    if (!layerElement) {
+        std::cout << "No layer element found." << std::endl;
+        return;
+    }
     parseLayer(layerElement);
-    XMLElement* collisionLayer = mapElement->FirstChildElement("objectgroup");
+   
+    XMLElement* collisionLayer = groupElement->FirstChildElement("objectgroup");
     parseCollisionLayer(collisionLayer, layerElement);
 
 
     // Store layer offsets
-    layerOffsetX = layerElement->FloatAttribute("offsetx", 0);
-    layerOffsetY = layerElement->FloatAttribute("offsety", 0);
+    // layerOffsetX = layerElement->FloatAttribute("offsetx", 0);
+    // layerOffsetY = layerElement->FloatAttribute("offsety", 0);
 }
 
 
@@ -69,6 +83,8 @@ void World::parseTileset(XMLElement* tilesetElement) {
 
 
 void World::parseLayer(XMLElement* layerElement) {
+
+	std::cout << "starting parseLayer" << std::endl;
     if (!layerElement) return;
 
     XMLElement* dataElement = layerElement->FirstChildElement("data");
@@ -76,16 +92,23 @@ void World::parseLayer(XMLElement* layerElement) {
 
     tiles.clear(); // Clear previous map data
 
-    int minChunkX = INT_MAX, minChunkY = INT_MAX;
-    int maxChunkX = INT_MIN, maxChunkY = INT_MIN;
+    minChunkX = INT_MAX;
+    minChunkY = INT_MAX;
+    int maxChunkX = INT_MIN;
+    int maxChunkY = INT_MIN;
+
+
 
     // First pass: Find min/max chunk coordinates
     for (XMLElement* chunkElement = dataElement->FirstChildElement("chunk");
         chunkElement;
         chunkElement = chunkElement->NextSiblingElement("chunk")) {
+        std::cout << "starting first pass" << std::endl;
+
 
         //Chunk x and y are the top left of the chunk
         int chunkX = chunkElement->IntAttribute("x");
+		std::cout << "chunkX: " << chunkX << std::endl;
         int chunkY = chunkElement->IntAttribute("y");
         int chunkWidth = chunkElement->IntAttribute("width");
         int chunkHeight = chunkElement->IntAttribute("height");
@@ -106,6 +129,13 @@ void World::parseLayer(XMLElement* layerElement) {
 
     std::cout << "Determined Map Size: " << mapWidth << "x" << mapHeight << std::endl;
 
+
+
+
+
+
+
+
     // Second pass: Process chunks with adjusted offsets
     for (XMLElement* chunkElement = dataElement->FirstChildElement("chunk");
         chunkElement;
@@ -114,6 +144,8 @@ void World::parseLayer(XMLElement* layerElement) {
         //subtract min x and y so all chunks start relative to (0,0)
         int chunkX = chunkElement->IntAttribute("x") - minChunkX; 
         int chunkY = chunkElement->IntAttribute("y") - minChunkY;
+        std::cout << "minCHUNKKKKKKKKKKKK" << this->minChunkX << std::endl;
+
         int chunkWidth = chunkElement->IntAttribute("width");
         int chunkHeight = chunkElement->IntAttribute("height");
 
@@ -121,6 +153,7 @@ void World::parseLayer(XMLElement* layerElement) {
             << chunkWidth << "x" << chunkHeight << std::endl;
 
         std::string csvData = chunkElement->GetText();
+
         //converts chunk data into stream so I can read individual tile values
         std::istringstream dataStream(csvData);
         std::string tile;
@@ -185,6 +218,8 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
         float widthRaw = objectElement->FloatAttribute("width", tileSize);
         float heightRaw = objectElement->FloatAttribute("height", tileSize);
 
+
+        //I am dividing by tilesize because the tmx file has the coordinates as normal number coordinates
         int x = static_cast<int>(std::round(xRaw / tileSize));
         int y = static_cast<int>(std::round(yRaw / tileSize));
         int width = static_cast<int>(std::round(widthRaw / tileSize));
@@ -206,6 +241,9 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 
     std::cout << "Determined Collision Map Size: " << mapWidth << "x" << mapHeight << std::endl;
 
+
+
+
     // Step 3: Process objects with adjusted offsets
     for (tinyxml2::XMLElement* objectElement = objectGroupElement->FirstChildElement("object");
         objectElement;
@@ -216,8 +254,10 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
         float widthRaw = objectElement->FloatAttribute("width", tileSize);
         float heightRaw = objectElement->FloatAttribute("height", tileSize);
 
-        int x = static_cast<int>(std::round(xRaw / tileSize)) - minX;  // Normalize X
-        int y = static_cast<int>(std::round(yRaw / tileSize)) - minY;  // Normalize Y
+        std::cout << "minCHUNKKKKKKKKKKKK" << this->minChunkX << std::endl;
+
+        int x = static_cast<int>(std::round(xRaw / tileSize)) - this->minChunkX; // - minX;  // Normalize X
+        int y = static_cast<int>(std::round(yRaw / tileSize)) - this->minChunkY; //- minY;  // Normalize Y
         int width = static_cast<int>(std::round(widthRaw / tileSize));
         int height = static_cast<int>(std::round(heightRaw / tileSize));
 
@@ -226,15 +266,15 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 
         std::cout << "Processing collision object at (" << x << ", " << y << ") size: "
             << width * tileSize << "x" << height * tileSize << std::endl;
-        layerOffsetY = layerElement->FloatAttribute("offsety", 0);
-        layerOffsetX = layerElement->FloatAttribute("offsetx", 0);
+       // layerOffsetY = layerElement->FloatAttribute("offsety", 0);
+       // layerOffsetX = layerElement->FloatAttribute("offsetx", 0);
 
         // Step 4: Mark the collision tiles in the normalized map
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int tileX = (x + i) - (layerOffsetX / tileSize);
-                int tileY = (y + j) + (layerOffsetY/tileSize);
-                std::cout << "y j: " << y + j << "tiley: " << tileY << "off: " << layerOffsetY << std::endl;
+                int tileX = (x + i); // +(layerOffsetX / tileSize);
+                int tileY = (y + j); // +(layerOffsetY / tileSize);
+                //std::cout << "y j: " << y + j << "tiley: " << tileY << "off: " << layerOffsetY << std::endl;
                 if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
                     collisionMap[tileY][tileX] = true;
                 }
@@ -255,8 +295,6 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 }
 
 
-
-
 // Function to check if a tile is solid
 bool World::isCollidable(int x, int y) {
     if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
@@ -267,24 +305,101 @@ bool World::isCollidable(int x, int y) {
 
 
 
+//AABB Wall Collision Detection
+
+void World::checkWallCollisons(GameObject& p) {
+
+    for (int i = 0; i < mapHeight; i++) {
+        for (int j = 0; j < mapWidth; j++) {
+            if (collisionMap[i][j] == true) {
+                // calculating distance from player and collision tile using their centers
+                //I am using tileSize instead of tile width and tile height because my tiles are sqaures but If I wanted to not use sqaure I would have to use tile height and width instead of tileSize
+                int distX = floor(p.getX() + p.getPlayerWidth() / 2) - (j * tileSize + tileSize / 2);
+                int distY = floor(p.getY() + p.getPlayerHeight() / 2) - (i * tileSize + tileSize / 2);
+                int combinedHalfW = floor(p.getPlayerWidth() / 2) + (tileSize / 2);
+                int combinedHalfH = floor(p.getPlayerHeight() / 2) + (tileSize / 2);
+                //check for x overlap
+                if (abs(distX) < combinedHalfW) {
+
+                    //check for y overlap
+                    if (abs(distY) < combinedHalfH) {
+                        int overlapX = combinedHalfW - abs(distX);
+                        int overlapY = combinedHalfH - abs(distY);
+                        //we need to look for smallest overlap
+                        if (overlapX >= overlapY) {
+                            //correct Y position
+                            //intersecting top side because if cell is above player that means player height - cell position is positive
+                            if (distY > 0) {
+                                p.setY(p.getY() + overlapY); //move down
+                            }
+                            else {
+                                p.setY(p.getY() - overlapY); //move up
+                            }
+
+                            // NEW FIX:
+                            p.setdy(0);  // stop vertical velocity after vertical collision
+                        }//end Y corrections
+                        else {
+                            //correct X position
+                            //intersecting left side because if cell is to the left of player that means player width - cell position is positive
+                            if (distX > 0) {
+                                p.setX(p.getX() + overlapX); //move right
+                            }
+                            else {
+                                p.setX(p.getX() - overlapX); //move left
+                            }
+                        }
+                    }//end y overlap
+                }//end x overlap
+
+
+            }//endcollisionMap
+        }//end columns
+    }//end rows
+}
+
+
+/*void World::updateCollisionMap(int cameraX, int cameraY, int screenWidth, int screenHeight) {
+    int startX = cameraX / tileSize;
+    int startY = cameraY / tileSize;
+    int endX = startX + (screenWidth / tileSize); // calculate how big the render array will be
+    int endY = startY + (screenHeight / tileSize);
+
+    for (int x = startX; x < endX; x++) {
+        for (int y = startY; y < endY; y++) {
+
+
+        }
+    }
+
+
+}
+*/
+
 
 
 
 
 
 void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenWidth, int screenHeight) {
+    if (tiles.empty() || tiles[0].empty()) {
+        std::cout << "Tiles vector is not properly initialized." << std::endl;
+    }
+
     int startX = cameraX / tileSize;
     int startY = cameraY / tileSize;
-    int endX = startX + (screenWidth / tileSize);
+    int endX = startX + (screenWidth / tileSize); // calculate how big the render array will be
     int endY = startY + (screenHeight / tileSize);
-    tileLocationsX.resize(endX);
-    tileLocationsY.resize(endY);
+    //tileLocationsX.resize(endX);
+    //tileLocationsY.resize(endY);
 
     SDL_FRect srcTile;
 
     for (int x = startX; x < endX; x++) {
         for (int y = startY; y < endY; y++) {
-            if (x >= 0 && y >= 0 && x < tiles[0].size() && y < tiles.size()) {
+            if (y >= 0 && y < tiles.size() && x >= 0 && x < tiles[0].size()){
+
+            // if (x >= 0 && y >= 0 && x < tiles[0].size() && y < tiles.size()) {
                 int tileID = tiles[y][x]; // Y comes first in 2D arrays
 
                 if (tileID == 0) continue;  // Skip empty tiles
@@ -299,16 +414,16 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
                 srcTile = { tileX, tileY, tileSize, tileSize };
 
                 //locations where the tiles will be drawn
-                int tileLocationX = (x * tileSize - cameraX) + layerOffsetX;
-                int tileLocationY = (y * tileSize - cameraY) + layerOffsetY;
+                int tileLocationX = x * tileSize;
+                int tileLocationY = y * tileSize; // (y * tileSize - cameraY) + layerOffsetY;
 
 
                 //where the tile will be drawn
                 SDL_FRect destTile = { tileLocationX,tileLocationY,tileSize, tileSize };
 
 
-                tileLocationsX[y] = tileLocationX;
-                tileLocationsY[y] = tileLocationY;
+               // tileLocationsX[y] = tileLocationX;
+               // tileLocationsY[y] = tileLocationY;
 
                 SDL_RenderTexture(renderer, tilesetTexture, &srcTile, &destTile);
             }
@@ -320,13 +435,16 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
     // Render collision map overlay
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 120);  // Red with 120 alpha
 
-    //map to show where the actual collision is from parsecollisionlayer
+    //map to show where the collision is from parsecollisionlayer
     for (int x = startX; x < endX; x++) {
         for (int y = startY; y < endY; y++) {
-            if (x >= 0 && y >= 0 && x < collisionMap[0].size() && y < collisionMap.size()) {
+            if (y >= 0 && y < collisionMap.size() && x >= 0 && x < collisionMap[0].size()) {
+            // if (x >= 0 && y >= 0 && x < collisionMap[0].size() && y < collisionMap.size()) {
                 if (collisionMap[y][x]) {
-                    int tileLocationX = x * tileSize;
-                        int tileLocationY = y * tileSize;
+
+                        //location where tiles will be drawn
+                        int tileLocationX = (x * tileSize); // - cameraX) + layerOffsetX;
+                        int tileLocationY = (y * tileSize); // - cameraY) + layerOffsetY;
 
                     SDL_FRect collisionBox = { tileLocationX, tileLocationY, tileSize, tileSize };
                     SDL_RenderFillRect(renderer, &collisionBox);
@@ -336,7 +454,6 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
     }
 
     // Reset color to white after rendering collision map
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 }
 
 

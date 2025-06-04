@@ -1,6 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include "GameObject.h"
 #include <vector>
 #include <string>
 #include <SDL3/SDL.h>
@@ -19,8 +20,9 @@ public:
 
     bool isCollidable(int x, int y); // New function to check collision
 
+    void checkWallCollisons(GameObject& p);
 private:
-    std::vector<int> tileLocationsX;
+    std::vector<int> tileLocationsX; //tile locations for rendering
     std::vector<int> tileLocationsY;
     SDL_Texture* tilesetTexture;
     float tileSize;
@@ -31,6 +33,7 @@ private:
     std::vector<std::vector<int>> tiles;
     std::vector<std::vector<bool>> collisionMap; // Collision map
 
+    //void World::updateCollisionMap(int cameraX, int cameraY, int screenWidth, int screenHeight);
 
     void parseTileset(tinyxml2::XMLElement* tilesetElement);
     void parseLayer(tinyxml2::XMLElement* layerElement);

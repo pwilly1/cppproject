@@ -28,7 +28,7 @@ bool Game::init() {
 	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	player = new GameObject(600, 450, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
+	player = new GameObject(600, 250, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
 
 	return true;
 }
@@ -151,16 +151,19 @@ void Game::run() {
 }
 
 void Game::update(float deltaTime) {
-	// Predict the player's next position
-	float newX = player->getX() + player->getdx() * deltaTime + 0.5f;
-	float newY = player->getY() + player->getdy() * deltaTime + 0.5f;
+
+	world->checkWallCollisons(*player);
+
+	/* Predict the player's next position
+	float newX = player->getX();
+	float newY = player->getY();
 
 	// Convert position to tile-based coordinates
 	int tileSize = 16;
 	int leftTile = newX / tileSize;
-	int rightTile = (newX + player->getPlayerWidth() - 1) / tileSize;
+	int rightTile = (newX + player->getPlayerWidth()) / tileSize;
 	int topTile = newY / tileSize;
-	int bottomTile = (newY + player->getPlayerHeight() - 1) / tileSize;
+	int bottomTile = (newY + player->getPlayerHeight()) / tileSize;
 
 	// Check for horizontal collision separately
 	bool collisionX =
@@ -174,6 +177,7 @@ void Game::update(float deltaTime) {
 		player->setX(newX);
 	}
 	else {
+		std::cout << "horozontal collision" << std::endl;
 		// Resolve horizontal collision
 		if (player->getdx() > 0) { // Moving Right, push left
 			player->setX((rightTile * tileSize) - player->getPlayerWidth());
@@ -206,7 +210,7 @@ void Game::update(float deltaTime) {
 			player->setY((topTile + 1) * tileSize);
 		}
 	}
-
+	*/
 	// Final position update
 	player->update(deltaTime);
 

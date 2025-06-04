@@ -28,6 +28,7 @@ public:
     int getY() { return y; }
     int getPlayerHeight() { return height; }
     int getPlayerWidth() { return width; }
+    void setdy(float dy) { this->dy = dy; }
     
 
 
