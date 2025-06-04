@@ -1,4 +1,4 @@
-# SDL3 Platformer Project
+# SDL3 Platformer Project(NOT PORTABLE YET)
 
 This is my SDL3-based platformer game built with C++, SDL3, and TinyXML2.
 
@@ -24,8 +24,11 @@ Handled automatically by vcpkg:
 
 ## Build Instructions
 
-### Clone the repository:
+### Clone the repository(NOT PORTABLE YET):
 
 ```bash
 git clone https://github.com/pwilly1/cppproject.git
 cd cppproject
+vcpkg install
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build
