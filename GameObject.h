@@ -1,5 +1,6 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
+class World;
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <iostream>
@@ -19,8 +20,8 @@ public:
     int getdx() { return dx; }
     int getdy() { return dy; }
     bool getIsJumping();
-    void jump();
-    bool isOnGround();
+    void jump(World& world);
+    //bool isOnGround();
     void SetGroundLevel();
     void setX(int x) { this->x = x; }
     void setY(int y) { this->y = y; }
@@ -29,6 +30,7 @@ public:
     int getPlayerHeight() { return height; }
     int getPlayerWidth() { return width; }
     void setdy(float dy) { this->dy = dy; }
+
     
 
 

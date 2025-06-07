@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "World.h"
 #include <iostream>
 
 GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath) {
@@ -59,6 +60,8 @@ void GameObject::SetGroundLevel() {
 
 }
 
+
+/*
 bool GameObject::isOnGround() {
     if (y >= groundLevel - height) {
         return true;
@@ -67,6 +70,7 @@ bool GameObject::isOnGround() {
         return false;
     }
 }
+*/
 
 void GameObject::update(float deltaTime) {
 
@@ -76,11 +80,12 @@ void GameObject::update(float deltaTime) {
     x += dx * deltaTime;
     y += dy * deltaTime;
 
-    if (isOnGround() == true) {  // Prevents the object from sinking into the ground
+   /* if (isOnGround() == true) {  // Prevents the object from sinking into the ground
         y = groundLevel - height;
         
         isJumping = false;
     }
+    */
 
     destRect.x = static_cast<int>(x);
     destRect.y = static_cast<int>(y);
@@ -106,8 +111,8 @@ bool GameObject::getIsJumping() {
     return isJumping;
 }
 
-void GameObject::jump() {
-    if (isJumping == false && isOnGround() == true) {
+void GameObject::jump(World& world) {
+    if (world.isOnGround() == true) {
         std::cout << "jumpiscALLED" << std::endl;
         dy = -jumpPower;
         isJumping = true;

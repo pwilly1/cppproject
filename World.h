@@ -1,7 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "GameObject.h"
+class GameObject; // Forward declaration to avoid circular dependency
 #include <vector>
 #include <string>
 #include <SDL3/SDL.h>
@@ -17,10 +17,10 @@ public:
     std::vector<int> getTileLocationsY() { return tileLocationsY; }
     int getMinChunkY() { return minChunkY;}
     int getMinChunkX() { return minChunkX; }
-
-    bool isCollidable(int x, int y); // New function to check collision
-
     void checkWallCollisons(GameObject& p);
+
+    bool isOnGround();
+
 private:
     std::vector<int> tileLocationsX; //tile locations for rendering
     std::vector<int> tileLocationsY;

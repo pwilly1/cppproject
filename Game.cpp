@@ -88,9 +88,9 @@ void Game::handleEvents() {
 
 			SDL_Keycode key = event.key.key;
 
-			if (key == SDLK_W && player->getIsJumping() == false) {
+			if (key == SDLK_W) {
 				std::cout << "w key\n";
-				player->jump();
+				player->jump(*world);
 				
 			}
 			if (key == SDLK_S) player->setVelocity(player->getdx(), player->getSpeed());   // Move Down

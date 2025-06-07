@@ -133,7 +133,6 @@ dist
 
 ### vcpkg ###
 # Vcpkg
-
 vcpkg-manifest-install.log
 
 ## Manifest Mode

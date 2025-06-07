@@ -1,4 +1,5 @@
 #include "World.h"
+#include "GameObject.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -295,14 +296,6 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 }
 
 
-// Function to check if a tile is solid
-bool World::isCollidable(int x, int y) {
-    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
-        return false;
-    }
-    return collisionMap[y][x];
-}
-
 
 
 //AABB Wall Collision Detection
@@ -333,6 +326,8 @@ void World::checkWallCollisons(GameObject& p) {
                                 p.setY(p.getY() + overlapY); //move down
                             }
                             else {
+								std::cout << "is on ground" << std::endl;
+                                isOnGround();
                                 p.setY(p.getY() - overlapY); //move up
                             }
 
@@ -358,25 +353,9 @@ void World::checkWallCollisons(GameObject& p) {
     }//end rows
 }
 
-
-/*void World::updateCollisionMap(int cameraX, int cameraY, int screenWidth, int screenHeight) {
-    int startX = cameraX / tileSize;
-    int startY = cameraY / tileSize;
-    int endX = startX + (screenWidth / tileSize); // calculate how big the render array will be
-    int endY = startY + (screenHeight / tileSize);
-
-    for (int x = startX; x < endX; x++) {
-        for (int y = startY; y < endY; y++) {
-
-
-        }
-    }
-
-
+bool World::isOnGround() {
+    return true;
 }
-*/
-
-
 
 
 
