@@ -1,4 +1,4 @@
-# SDL3 Platformer Project(NOT PORTABLE YET)
+# SDL3 Platformer/Game Engine Project (NOT PORTABLE YET)
 
 This is my SDL3-based platformer game built with C++, SDL3, and TinyXML2.
 
