@@ -33,6 +33,9 @@ void World::loadFromTMX(const std::string& filename) {
 
     //retreiving information from mapElement
 
+
+
+	//mapwidth and mapheight from tmx file are useless because I am using infinite map mode so I will calculate correct map size based on chunks in the parsing
     mapWidth = mapElement->IntAttribute("width");
     std::cout << "Map Width: " << mapWidth << std::endl;
 
@@ -63,9 +66,7 @@ void World::loadFromTMX(const std::string& filename) {
     parseCollisionLayer(collisionLayer, layerElement);
 
 
-    // Store layer offsets
-    // layerOffsetX = layerElement->FloatAttribute("offsetx", 0);
-    // layerOffsetY = layerElement->FloatAttribute("offsety", 0);
+  
 }
 
 
@@ -267,14 +268,13 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 
         std::cout << "Processing collision object at (" << x << ", " << y << ") size: "
             << width * tileSize << "x" << height * tileSize << std::endl;
-       // layerOffsetY = layerElement->FloatAttribute("offsety", 0);
-       // layerOffsetX = layerElement->FloatAttribute("offsetx", 0);
+     
 
         // Step 4: Mark the collision tiles in the normalized map
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int tileX = (x + i); // +(layerOffsetX / tileSize);
-                int tileY = (y + j); // +(layerOffsetY / tileSize);
+                int tileX = (x + i); 
+                int tileY = (y + j); 
                 //std::cout << "y j: " << y + j << "tiley: " << tileY << "off: " << layerOffsetY << std::endl;
                 if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
                     collisionMap[tileY][tileX] = true;
@@ -300,7 +300,7 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 
 //AABB Wall Collision Detection
 
-void World::checkWallCollisons(GameObject& p) {
+void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
 
     for (int i = 0; i < mapHeight; i++) {
         for (int j = 0; j < mapWidth; j++) {
@@ -311,6 +311,7 @@ void World::checkWallCollisons(GameObject& p) {
                 int distY = floor(p.getY() + p.getPlayerHeight() / 2) - (i * tileSize + tileSize / 2);
                 int combinedHalfW = floor(p.getPlayerWidth() / 2) + (tileSize / 2);
                 int combinedHalfH = floor(p.getPlayerHeight() / 2) + (tileSize / 2);
+
                 //check for x overlap
                 if (abs(distX) < combinedHalfW) {
 
@@ -393,12 +394,12 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
                 srcTile = { tileX, tileY, tileSize, tileSize };
 
                 //locations where the tiles will be drawn
-                int tileLocationX = x * tileSize;
-                int tileLocationY = y * tileSize; // (y * tileSize - cameraY) + layerOffsetY;
+                int tileLocationX = (x * tileSize) - cameraX;
+                int tileLocationY = (y * tileSize) - cameraY; // (y * tileSize - cameraY) + layerOffsetY;
 
 
                 //where the tile will be drawn
-                SDL_FRect destTile = { tileLocationX,tileLocationY,tileSize, tileSize };
+                SDL_FRect destTile = { static_cast<float>(tileLocationX), static_cast<float>(tileLocationY), tileSize, tileSize };
 
 
                // tileLocationsX[y] = tileLocationX;
@@ -414,7 +415,7 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
     // Render collision map overlay
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 120);  // Red with 120 alpha
 
-    //map to show where the collision is from parsecollisionlayer
+    //map to show where the actual collision is
     for (int x = startX; x < endX; x++) {
         for (int y = startY; y < endY; y++) {
             if (y >= 0 && y < collisionMap.size() && x >= 0 && x < collisionMap[0].size()) {
@@ -422,10 +423,10 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
                 if (collisionMap[y][x]) {
 
                         //location where tiles will be drawn
-                        int tileLocationX = (x * tileSize); // - cameraX) + layerOffsetX;
-                        int tileLocationY = (y * tileSize); // - cameraY) + layerOffsetY;
+                    int tileLocationX = (x * tileSize) - cameraX;
+                    int tileLocationY = (y * tileSize) - cameraY;
+                    SDL_FRect collisionBox = { static_cast<float>(tileLocationX), static_cast<float>(tileLocationY), tileSize, tileSize };
 
-                    SDL_FRect collisionBox = { tileLocationX, tileLocationY, tileSize, tileSize };
                     SDL_RenderFillRect(renderer, &collisionBox);
                 }
             }

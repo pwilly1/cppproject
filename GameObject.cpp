@@ -92,9 +92,18 @@ void GameObject::update(float deltaTime) {
 
 
 }
-void GameObject::render(SDL_Renderer* renderer) {
+void GameObject::render(SDL_Renderer* renderer, float cameraX, float cameraY) {
+
+	// I subtracted cameraX and cameraY from the x and y coordinates to ensure that the object is rendered in world coordinates so it lines up with the map render.
     if (texture) {
-        SDL_RenderTexture(renderer, texture, &srcRect, &destRect);
+        SDL_FRect screenRect = {
+            static_cast<float>(x - cameraX),
+            static_cast<float>(y - cameraY),
+            static_cast<float>(width),
+            static_cast<float>(height)
+        };
+		std::cout << "Rendering GameObject at: " << screenRect.x << ", " << screenRect.y << std::endl;
+        SDL_RenderTexture(renderer, texture, &srcRect, &screenRect);
     }
     else {
         std::cout << "Warning: Trying to render a NULL texture!" << std::endl;

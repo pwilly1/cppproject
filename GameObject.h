@@ -14,7 +14,7 @@ public:
     GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath);
     ~GameObject();
     void update(float deltaTime);  //  Updates movement
-    void render(SDL_Renderer* renderer); //  Draws the object
+    void render(SDL_Renderer* renderer, float cameraX, float cameraY); //  Draws the object
     void setVelocity(int dx, int dy); // Sets movement speed
     int getSpeed() const { return speed; }
     int getdx() { return dx; }

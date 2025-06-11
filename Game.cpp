@@ -47,7 +47,7 @@ void Game::render() {
 	world->render(renderer, cameraX, cameraY, screenWidth, screenHeight);
 
 
-	player->render(renderer);
+	player->render(renderer, cameraX, cameraY);
 
 	SDL_RenderPresent(renderer);
 }
@@ -152,71 +152,14 @@ void Game::run() {
 
 void Game::update(float deltaTime) {
 
-	world->checkWallCollisons(*player);
+	world->checkWallCollisons(*player, cameraX, cameraY);
 
-	/* Predict the player's next position
-	float newX = player->getX();
-	float newY = player->getY();
-
-	// Convert position to tile-based coordinates
-	int tileSize = 16;
-	int leftTile = newX / tileSize;
-	int rightTile = (newX + player->getPlayerWidth()) / tileSize;
-	int topTile = newY / tileSize;
-	int bottomTile = (newY + player->getPlayerHeight()) / tileSize;
-
-	// Check for horizontal collision separately
-	bool collisionX =
-		world->isCollidable(leftTile, topTile) ||
-		world->isCollidable(rightTile, topTile) ||
-		world->isCollidable(leftTile, bottomTile) ||
-		world->isCollidable(rightTile, bottomTile);
-
-	// Apply movement only if no collision
-	if (!collisionX) {
-		player->setX(newX);
-	}
-	else {
-		std::cout << "horozontal collision" << std::endl;
-		// Resolve horizontal collision
-		if (player->getdx() > 0) { // Moving Right, push left
-			player->setX((rightTile * tileSize) - player->getPlayerWidth());
-		}
-		else if (player->getdx() < 0) { // Moving Left, push right
-			player->setX((leftTile + 1) * tileSize);
-		}
-	}
-
-	// Recalculate tile positions with the adjusted X position
-	leftTile = player->getX() / tileSize;
-	rightTile = (player->getX() + player->getPlayerWidth() - 1) / tileSize;
-
-	// Check for vertical collision separately
-	bool collisionY =
-		world->isCollidable(leftTile, topTile) ||
-		world->isCollidable(rightTile, topTile) ||
-		world->isCollidable(leftTile, bottomTile) ||
-		world->isCollidable(rightTile, bottomTile);
-
-	if (!collisionY) {
-		player->setY(newY);
-	}
-	else {
-		// Resolve vertical collision
-		if (player->getdy() > 0) { // Moving Down, push up
-			player->setY((bottomTile * tileSize) - player->getPlayerHeight());
-		}
-		else if (player->getdy() < 0) { // Moving Up, push down
-			player->setY((topTile + 1) * tileSize);
-		}
-	}
-	*/
-	// Final position update
+	
 	player->update(deltaTime);
 
 	// Move the camera based on the player's position
-	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (800 / 2);
-	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (800 / 2);
+	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (screenWidth / 2);
+	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (screenHeight / 2);
 }
 
 
