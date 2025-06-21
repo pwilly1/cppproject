@@ -28,7 +28,7 @@ bool Game::init() {
 	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	player = new GameObject(600, 250, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
+	player = new GameObject(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
 
 	return true;
 }
@@ -72,9 +72,15 @@ void Game::handleEvents() {
 
 		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			SDL_MouseButtonFlags button = event.button.button;
-
+			float mouseX;
+			float mouseY;
 			if (button == SDL_BUTTON_LEFT) {
 				std::cout << "left mouse pressed\n";
+				SDL_GetMouseState(&mouseX, &mouseY);
+				std::cout << "mouse x: " << mouseX << "mouseY: " << mouseY << std::endl;
+				mouseX += cameraX;
+				mouseY += cameraY;
+				world->breakTile(mouseX, mouseY);
 			}
 			if (button == SDL_BUTTON_MIDDLE) {
 				std::cout << "middle mousepressed\n";
@@ -158,6 +164,7 @@ void Game::update(float deltaTime) {
 	player->update(deltaTime);
 
 	// Move the camera based on the player's position
+	// The camera is centered on the player, adjusting for the screen size
 	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (screenWidth / 2);
 	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (screenHeight / 2);
 }

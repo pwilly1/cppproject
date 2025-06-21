@@ -18,6 +18,7 @@ public:
     int getMinChunkY() { return minChunkY;}
     int getMinChunkX() { return minChunkX; }
     void checkWallCollisons(GameObject& p, float cameraX, float cameraY);
+    void breakTile(int x, int y);
 
     bool isOnGround();
 

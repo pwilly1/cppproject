@@ -95,14 +95,16 @@ void GameObject::update(float deltaTime) {
 void GameObject::render(SDL_Renderer* renderer, float cameraX, float cameraY) {
 
 	// I subtracted cameraX and cameraY from the x and y coordinates to ensure that the object is rendered in world coordinates so it lines up with the map render.
+	// It basically makes the camera the origin of the world, so the object is rendered relative to the camera position.
+	// It does not change the actual x and y coordinates of the object, it just changes where it is rendered on the screen.
     if (texture) {
         SDL_FRect screenRect = {
-            static_cast<float>(x - cameraX),
-            static_cast<float>(y - cameraY),
+            static_cast<float>(x - cameraX), // this is the position of the player based on the screen not the world
+            static_cast<float>(y - cameraY), //it doesnt actually change the actual x and y of the object it just changes where its rendered on the screen
             static_cast<float>(width),
             static_cast<float>(height)
         };
-		std::cout << "Rendering GameObject at: " << screenRect.x << ", " << screenRect.y << std::endl;
+		// std::cout << "Rendering GameObject at: " << x << ", " << y << std::endl;
         SDL_RenderTexture(renderer, texture, &srcRect, &screenRect);
     }
     else {

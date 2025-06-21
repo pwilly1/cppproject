@@ -298,6 +298,31 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
 
 
 
+
+
+
+
+
+void World::breakTile(int x, int y) {
+    // Convert coordinates to tile indices
+    int tileX = x / tileSize;
+    int tileY = y / tileSize;
+    // Check if the tile is within bounds
+    if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
+        // Set the tile to 0 (empty)
+        tiles[tileY][tileX] = 0;
+        collisionMap[tileY][tileX] = 0;
+        std::cout << "Tile at (" << tileX << ", " << tileY << ") broken." << std::endl;
+    } else {
+        std::cout << "Tile coordinates out of bounds: (" << tileX << ", " << tileY << ")" << std::endl;
+    }
+}
+
+
+
+
+
+
 //AABB Wall Collision Detection
 
 void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
@@ -386,9 +411,9 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
 
                 //find the postion of tile inside the tileset texture
                 //get column index
-                float tileX = ((tileID - 1) % 8) * tileSize;  // Adjusting GID
+                float tileX = (tileID) % 8 * tileSize;  // Adjusting GID
                 //get row index
-                float tileY = ((tileID - 1) / 8) * tileSize;
+                float tileY = floor((tileID) / 16) * tileSize;
 
                 //portion of tileset imag eto be drawn
                 srcTile = { tileX, tileY, tileSize, tileSize };
