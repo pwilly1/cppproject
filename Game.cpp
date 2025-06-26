@@ -12,6 +12,7 @@ Game::Game() {
 bool Game::init() {
 	running = true;
 
+	TTF_Init();
 	SDL_Init(SDL_INIT_VIDEO);
 	
 	window = SDL_CreateWindow("My Game", 800, 800, SDL_WINDOW_RESIZABLE);
@@ -20,15 +21,18 @@ bool Game::init() {
 		return false;  // Exit if window creation fails
 	}
 	renderer = SDL_CreateRenderer(window, NULL);
+	textEngine = TTF_CreateRendererTextEngine(renderer);
 	screenWidth = 800;
 	screenHeight = 800;
 	SDL_SetRenderLogicalPresentation(renderer, 800, 800, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+
+	HUD = new HUDManager(textEngine, renderer, 10, 10);
 
 	world = new World(renderer);
 	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	player = new GameObject(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/Idle.png");
+	player = new GameObject(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/idle.png");
 
 	return true;
 }
@@ -48,11 +52,15 @@ void Game::render() {
 
 
 	player->render(renderer, cameraX, cameraY);
+	HUD->render(renderer, 40);
 
 	SDL_RenderPresent(renderer);
+
 }
 
 void Game::handleEvents() {
+
+	//check for events
 	if (SDL_PollEvent(&event) > 0) {
 		if (event.type == SDL_EVENT_QUIT) {
 			running = false;
@@ -72,15 +80,17 @@ void Game::handleEvents() {
 
 		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			SDL_MouseButtonFlags button = event.button.button;
-			float mouseX;
-			float mouseY;
+			//float mouseX;
+			//float mouseY;
+			//SDL_GetMouseState(&mouseX, &mouseY);
+			//Uint32 buttons = SDL_GetMouseState(&mouseX, &mouseY);
+			//SDL_BUTTON_LMASK is left mouse button mask that checks if left mouse button is being held down
 			if (button == SDL_BUTTON_LEFT) {
 				std::cout << "left mouse pressed\n";
-				SDL_GetMouseState(&mouseX, &mouseY);
-				std::cout << "mouse x: " << mouseX << "mouseY: " << mouseY << std::endl;
-				mouseX += cameraX;
-				mouseY += cameraY;
-				world->breakTile(mouseX, mouseY);
+				//std::cout << "mouse x: " << mouseX << "mouseY: " << mouseY << std::endl;
+				//mouseX += cameraX;
+				//mouseY += cameraY;
+				//world->breakTile(mouseX, mouseY);
 			}
 			if (button == SDL_BUTTON_MIDDLE) {
 				std::cout << "middle mousepressed\n";
@@ -90,6 +100,10 @@ void Game::handleEvents() {
 			}
 		}
 
+
+
+
+		//keyboard events
 		if (event.type == SDL_EVENT_KEY_DOWN) {
 
 			SDL_Keycode key = event.key.key;
@@ -107,7 +121,13 @@ void Game::handleEvents() {
 			if (key == SDLK_D) {
 				player->setVelocity(player->getSpeed(), player->getdy());  // Move Right
 			}
+			if (key == SDLK_1) {
+				std::cout << "Break mode toggled" << std::endl;
+				player->toggleBreakMode();
+			}
 		}
+
+		//stop player movement when key is released
 		if (event.type == SDL_EVENT_KEY_UP) {
 			SDL_Keycode key = event.key.key;
 			if (key == SDLK_A && player->getdx() < 0) {
@@ -162,6 +182,17 @@ void Game::update(float deltaTime) {
 
 	
 	player->update(deltaTime);
+
+	// Check for mouse input to break tiles
+	float mouseX, mouseY;
+	Uint32 buttons = SDL_GetMouseState(&mouseX, &mouseY);
+	
+	if (buttons & SDL_BUTTON_LMASK && player->getBreakMode()) {
+		float worldX = mouseX + cameraX;
+		float worldY = mouseY + cameraY;
+		world->breakTile(worldX, worldY);
+	}
+
 
 	// Move the camera based on the player's position
 	// The camera is centered on the player, adjusting for the screen size

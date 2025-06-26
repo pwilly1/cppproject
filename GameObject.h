@@ -30,11 +30,15 @@ public:
     int getPlayerHeight() { return height; }
     int getPlayerWidth() { return width; }
     void setdy(float dy) { this->dy = dy; }
+    bool getBreakMode() { return breakMode; }
+    void toggleBreakMode();
 
     
 
 
 private:
+	bool breakMode = false;
+	int stoneCollected = 0;
     bool isJumping = false;
     float jumpPower = 300;
     const float gravity = 400;

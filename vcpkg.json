@@ -2,8 +2,14 @@
   "name": "cppproject",
   "version-string": "1.0.0",
   "dependencies": [
-    "tinyxml2"
+    "tinyxml2",
+    "sdl3-ttf",
+    "sdl3",
+    {
+      "name": "sdl3-image",
+      "features": ["png" ]
+    }
   ],
-  "builtin-baseline": "0c4cf19224a049cf82f4521e29e39f7bd680440c"
+  "builtin-baseline": "69d1f2e3d711bedc5403472c65d1c3609e7f09a2"
 }
 

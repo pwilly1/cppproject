@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="1" nextlayerid="7" nextobjectid="27">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="1" nextlayerid="7" nextobjectid="29">
  <editorsettings>
   <export target="map..tmx" format="tmx"/>
  </editorsettings>
  <tileset firstgid="1" source="../../../../../OneDrive/Documents/dirt.tsx"/>
  <group id="6" name="Group 1">
   <objectgroup id="3" name="Object Layer 1">
-   <object id="20" x="800" y="138.667" width="685.333" height="36"/>
+   <object id="20" x="801.333" y="139" width="685.333" height="36"/>
    <object id="21" x="-248.485" y="-1018.18" width="1784.85" height="848.485"/>
    <object id="22" x="-246" y="-162" width="482" height="16"/>
-   <object id="23" x="328" y="-160" width="476" height="18"/>
+   <object id="23" x="323.667" y="-163.667" width="476" height="18"/>
    <object id="24" x="816" y="-148" width="704" height="320"/>
    <object id="25" x="-256" y="177" width="1786" height="845"/>
    <object id="26" x="-255.5" y="-142" width="46.5" height="316"/>
+   <object id="27" x="800" y="-144.333" width="17.25" height="79.8333"/>
+   <object id="28" x="801" y="48.6667" width="16" height="89.3333"/>
   </objectgroup>
   <layer id="1" name="Tile Layer 1" width="30" height="20">
    <data encoding="csv">

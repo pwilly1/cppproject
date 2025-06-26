@@ -5,6 +5,7 @@
 GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath) {
     std::cout << "GameObject constructor called!" << std::endl;
 
+
     this->x = x;
     this->y = y;
     this->width = 0;
@@ -13,6 +14,7 @@ GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& 
     this->dy = 0;
     this->speed = 99;
     this->texture = nullptr;
+    this->stoneCollected = 10;
 
     if (!renderer) {
         std::cout << "Renderer is NULL before loading texture!" << std::endl;
@@ -37,11 +39,13 @@ GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& 
 
     std::cout << "Texture size: " << imageWidth << "x" << imageHeight << std::endl;
 
-    float frameWidth = imageWidth / 4;
+    float frameWidth = imageWidth;
     float frameHeight = imageHeight;
 
     this->height = frameHeight;
     this->width = frameWidth;
+
+	std::cout << "GameObject initialized at position: (" << x << ", " << y << ") with size: " << width << "x" << height << std::endl;
 
     srcRect = { 0, 0, frameWidth, frameHeight };
     destRect = { static_cast<float>(x), static_cast<float>(y), frameWidth, frameHeight };
@@ -108,7 +112,7 @@ void GameObject::render(SDL_Renderer* renderer, float cameraX, float cameraY) {
         SDL_RenderTexture(renderer, texture, &srcRect, &screenRect);
     }
     else {
-        std::cout << "Warning: Trying to render a NULL texture!" << std::endl;
+        std::cout << "Warning: Trying to render a NULL texture!(GameObject)" << std::endl;
     }
 	
 }
@@ -121,6 +125,16 @@ bool GameObject::getIsJumping() {
     std::cout << isJumping;
     return isJumping;
 }
+
+void GameObject::toggleBreakMode() {
+    if(breakMode == false) {
+        breakMode = true;
+    }
+    else {
+        breakMode = false;
+	}
+}
+
 
 void GameObject::jump(World& world) {
     if (world.isOnGround() == true) {

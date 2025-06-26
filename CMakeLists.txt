@@ -11,21 +11,18 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
         CACHE STRING "Vcpkg toolchain file")
 endif()
 
-# Find SDL3
-set(SDL3_DIR "C:/Users/prwil/OneDrive/Documents/SDL3/SDL3-3.2.4")
-include_directories(${SDL3_DIR}/include)
-link_directories(${SDL3_DIR}/lib/x64)
+
 
 # Add the source files
-add_executable(cppproject main.cpp "Game.cpp" "Game.h" "GameObject.cpp" "GameObject.h" "World.h" "World.cpp")
+add_executable(cppproject main.cpp "Game.cpp" "Game.h" "GameObject.cpp" "GameObject.h" "World.h" "World.cpp" "HUDManager.cpp" "HUDManager.h")
 
 # Find and Link SDL3
-set(CMAKE_PREFIX_PATH "C:/Users/prwil/OneDrive/Documents/SDL3/SDL3-3.2.4/cmake")
 find_package(SDL3 REQUIRED)
 target_link_libraries(cppproject SDL3::SDL3)
 
 # Find and Link SDL3_image
-set(CMAKE_PREFIX_PATH "C:/Users/prwil/OneDrive/Documents/SDL3/image/SDL3_image-3.2.0/cmake")
+set(CMAKE_PREFIX_PATH "C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows")
+include_directories("C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows/include")
 find_package(SDL3_image REQUIRED)
 target_link_libraries(cppproject SDL3_image::SDL3_image)
 
@@ -34,4 +31,7 @@ set(CMAKE_PREFIX_PATH "C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_inst
 include_directories("C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows/include")
 find_package(TinyXML2 REQUIRED)
 target_link_libraries(cppproject TinyXML2)
+
+find_package(SDL3_ttf REQUIRED)
+target_link_libraries(cppproject SDL3_ttf::SDL3_ttf)
 

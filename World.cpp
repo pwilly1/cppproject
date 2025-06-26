@@ -4,13 +4,17 @@
 #include <fstream>
 #include <sstream>
 #include "tinyxml2.h"
-
+#include <filesystem>  // C++17
+    
 using namespace tinyxml2;
 
-World::World(SDL_Renderer* renderer) {
-    tilesetTexture = IMG_LoadTexture(renderer, "../../../resources/Cave Tiles/Cave Tiles.png");
+World::World(SDL_Renderer* renderer) {  
+    std::cout << "Attempting to load tileset texture from: ../../../resources/Cave Tiles/Cave Tiles.png" << std::endl;
+    std::cout << "Current Working Directory: " << std::filesystem::current_path() << std::endl;
+
+    tilesetTexture = IMG_LoadTexture(renderer, "C:/Users/prwil/source/repos/pwilly1/cppproject/resources/Cave Tiles/Cave Tiles.png");
     if (!tilesetTexture) {
-        std::cout << "Failed to load tileset: " << SDL_GetError() << std::endl;
+        std::cout << "Failed to load tileset(world.cpp): " << SDL_GetError() << std::endl;
     }
 }
 
@@ -352,7 +356,7 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
                                 p.setY(p.getY() + overlapY); //move down
                             }
                             else {
-								std::cout << "is on ground" << std::endl;
+								// std::cout << "is on ground" << std::endl;
                                 isOnGround();
                                 p.setY(p.getY() - overlapY); //move up
                             }
@@ -438,7 +442,7 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     // Render collision map overlay
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 120);  // Red with 120 alpha
+    /*SDL_SetRenderDrawColor(renderer, 255, 0, 0, 120);  // Red with 120 alpha
 
     //map to show where the actual collision is
     for (int x = startX; x < endX; x++) {
@@ -457,7 +461,7 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
             }
         }
     }
-
+    */
     // Reset color to white after rendering collision map
 }
 
