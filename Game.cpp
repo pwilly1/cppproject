@@ -15,6 +15,22 @@ bool Game::init() {
 	TTF_Init();
 	SDL_Init(SDL_INIT_VIDEO);
 	
+	SDL_DisplayID displayID = SDL_GetPrimaryDisplay();
+	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayID);
+
+	if (mode) {
+		screenWidth = mode->w;
+		screenHeight = mode->h;
+		std::cout << "Screen size: " << screenWidth << " x " << screenHeight << std::endl;
+	}
+	else {
+		std::cout << "Failed to get display mode: " << SDL_GetError() << std::endl;
+	}
+
+	int widthscreen = screenWidth;
+	int heightscreen = screenHeight;
+
+
 	window = SDL_CreateWindow("My Game", 800, 800, SDL_WINDOW_RESIZABLE);
 	if (!window) {
 		std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
@@ -22,11 +38,12 @@ bool Game::init() {
 	}
 	renderer = SDL_CreateRenderer(window, NULL);
 	textEngine = TTF_CreateRendererTextEngine(renderer);
-	screenWidth = 800;
-	screenHeight = 800;
-	SDL_SetRenderLogicalPresentation(renderer, 800, 800, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+	
+	SDL_SetRenderLogicalPresentation(renderer, widthscreen, heightscreen, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 
-	HUD = new HUDManager(textEngine, renderer, 10, 10);
+	inventory = new Inventory();
+
+	HUD = new HUDManager(textEngine, renderer, 10, 10, inventory, screenWidth, screenHeight);
 
 	world = new World(renderer);
 	world->loadFromTMX("../../../resources/map.tmx");
@@ -69,10 +86,10 @@ void Game::handleEvents() {
 
 		if (event.type == SDL_EVENT_WINDOW_RESIZED) {
 			
-			SDL_GetWindowSize(window, &screenWidth, &screenHeight);
+			//SDL_GetWindowSize(window, &screenWidth, &screenHeight);
 
 			//  Maintain proper aspect ratio on resize
-			SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+			//SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 
 			std::cout << "Window resized to: " << screenWidth << "x" << screenHeight << std::endl;
 		}
@@ -168,6 +185,13 @@ void Game::run() {
 		Uint64 currentTime= SDL_GetTicks();
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
+
+		//Had to add this because resizing screen Halts game loop
+		if (deltaTime > 0.05f) {
+			deltaTime = 0.05f;
+		}
+
+
 		handleEvents();
 		update(deltaTime);
 		render();

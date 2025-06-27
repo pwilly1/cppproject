@@ -6,6 +6,7 @@
 #include <iostream>
 #include <SDL3_ttf/SDL_ttf.h>
 #include "HUDManager.h"
+#include "Inventory.h"
 
 class World;
 class Game {
@@ -22,6 +23,7 @@ public:
 	void update(float deltaTime);
 
 private:
+	Inventory* inventory;
 	HUDManager* HUD;
 	World* world;
 	float cameraX = 0;
