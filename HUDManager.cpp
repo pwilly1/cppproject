@@ -13,6 +13,7 @@ HUDManager::HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, 
 	if (!font) {
 		std::cout << "font invalid" << SDL_GetError();
 	}
+	this->inventory = inventory;
 	this->screenWidth = screenWidth;
 	this->screenHeight = screenHeight;
 	this->engine = engine;
@@ -21,7 +22,9 @@ HUDManager::HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, 
 	this->y = y;
 }
 
-void HUDManager::render(SDL_Renderer* renderer, int stoneCollected) {
+void HUDManager::render(SDL_Renderer* renderer) {
+
+	int stoneCollected = 40;
 
 	std::string stone = std::to_string(stoneCollected);
 	char const* pchar = stone.c_str();  //use char const* as target type
@@ -36,7 +39,7 @@ void HUDManager::render(SDL_Renderer* renderer, int stoneCollected) {
 		std::cout << "cant render text" << SDL_GetError() << std::endl;
 	}
 	float boxX = (screenWidth / 2) - 200;
-	float boxY = screenHeight - 80;
+	float boxY = screenHeight - 100;
 	for (int i = 0; i < 10; i++) {
 		int x = i;
 		x *= 40;
@@ -46,6 +49,18 @@ void HUDManager::render(SDL_Renderer* renderer, int stoneCollected) {
 	}
 
 
+}
+
+HUDManager::~HUDManager() {
+
+	if (inventoryBoxTexture) {
+		SDL_DestroyTexture(inventoryBoxTexture);
+		inventoryBoxTexture = nullptr;
+	}
+	if (font) {
+		TTF_CloseFont(font);
+		font = nullptr;
+	}
 }
 
 

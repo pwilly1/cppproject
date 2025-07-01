@@ -23,6 +23,7 @@ public:
 	void update(float deltaTime);
 
 private:
+	float Gzoom = 2;
 	Inventory* inventory;
 	HUDManager* HUD;
 	World* world;

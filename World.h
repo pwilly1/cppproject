@@ -7,10 +7,12 @@ class GameObject; // Forward declaration to avoid circular dependency
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include "tinyxml2.h"
+#include <unordered_set>
 
 class World {
 public:
     World(SDL_Renderer* renderer);
+    ~World();
     void loadFromTMX(const std::string& filename);
     void render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenWidth, int screenHeight);
     std::vector<int> getTileLocationsX() { return tileLocationsX; }
@@ -23,6 +25,8 @@ public:
     bool isOnGround();
 
 private:
+    std::unordered_set<int> collisionTileIDs;
+    float zoom = 2;
     std::vector<int> tileLocationsX; //tile locations for rendering
     std::vector<int> tileLocationsY;
     SDL_Texture* tilesetTexture;

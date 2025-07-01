@@ -39,7 +39,7 @@ bool Game::init() {
 	renderer = SDL_CreateRenderer(window, NULL);
 	textEngine = TTF_CreateRendererTextEngine(renderer);
 	
-	SDL_SetRenderLogicalPresentation(renderer, widthscreen, heightscreen, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+	SDL_SetRenderLogicalPresentation(renderer, 800, 800, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 
 	inventory = new Inventory();
 
@@ -69,7 +69,7 @@ void Game::render() {
 
 
 	player->render(renderer, cameraX, cameraY);
-	HUD->render(renderer, 40);
+	HUD->render(renderer);
 
 	SDL_RenderPresent(renderer);
 
@@ -86,10 +86,10 @@ void Game::handleEvents() {
 
 		if (event.type == SDL_EVENT_WINDOW_RESIZED) {
 			
-			//SDL_GetWindowSize(window, &screenWidth, &screenHeight);
+			SDL_GetWindowSize(window, &screenWidth, &screenHeight);
 
-			//  Maintain proper aspect ratio on resize
-			//SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+			//Maintain proper aspect ratio on resize
+			SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 
 			std::cout << "Window resized to: " << screenWidth << "x" << screenHeight << std::endl;
 		}
@@ -168,15 +168,7 @@ void Game::handleEvents() {
 
 }
 
-void Game::cleanup() {
-	delete player;
-	delete world;
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
 
-
-}
 
 void Game::run() {
 	Uint64 lastTime = SDL_GetTicks();
@@ -212,18 +204,58 @@ void Game::update(float deltaTime) {
 	Uint32 buttons = SDL_GetMouseState(&mouseX, &mouseY);
 	
 	if (buttons & SDL_BUTTON_LMASK && player->getBreakMode()) {
-		float worldX = mouseX + cameraX;
-		float worldY = mouseY + cameraY;
+		float worldX = mouseX / Gzoom + cameraX;
+		float worldY = mouseY / Gzoom + cameraY;
 		world->breakTile(worldX, worldY);
 	}
 
 
 	// Move the camera based on the player's position
 	// The camera is centered on the player, adjusting for the screen size
-	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (screenWidth / 2);
-	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (screenHeight / 2);
+	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (screenWidth / (2 * Gzoom));
+	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (screenHeight / (2 * Gzoom));
 }
 
+
+void Game::cleanup() {
+	if (player) {
+		delete player;
+		player = nullptr;
+	}
+
+	if (world) {
+		delete world;
+		world = nullptr;
+	}
+
+	if (HUD) {
+		delete HUD;
+		HUD = nullptr;
+	}
+
+	if (inventory) {
+		delete inventory;
+		inventory = nullptr;
+	}
+
+	if (textEngine) {
+		TTF_DestroyRendererTextEngine(textEngine);
+		textEngine = nullptr;
+	}
+
+	if (renderer) {
+		SDL_DestroyRenderer(renderer);
+		renderer = nullptr;
+	}
+
+	if (window) {
+		SDL_DestroyWindow(window);
+		window = nullptr;
+	}
+
+	TTF_Quit();
+	SDL_Quit();
+}
 
 
 

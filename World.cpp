@@ -18,6 +18,14 @@ World::World(SDL_Renderer* renderer) {
     }
 }
 
+World::~World() {
+    if (tilesetTexture) {
+        SDL_DestroyTexture(tilesetTexture);
+        tilesetTexture = nullptr;
+    }
+}
+
+
 void World::loadFromTMX(const std::string& filename) {
     //loading the XML doc from tmx file
     XMLDocument doc;
@@ -66,8 +74,8 @@ void World::loadFromTMX(const std::string& filename) {
     }
     parseLayer(layerElement);
    
-    XMLElement* collisionLayer = groupElement->FirstChildElement("objectgroup");
-    parseCollisionLayer(collisionLayer, layerElement);
+   //  XMLElement* collisionLayer = groupElement->FirstChildElement("objectgroup");
+   // parseCollisionLayer(collisionLayer, layerElement);
 
 
   
@@ -79,10 +87,35 @@ void World::loadFromTMX(const std::string& filename) {
 
 void World::parseTileset(XMLElement* tilesetElement) {
     if (!tilesetElement) return;
-    int firstGid = tilesetElement->IntAttribute("firstgid");
-    std::cout << "Tileset first GID: " << firstGid << std::endl;
-}
 
+    int firstGid = tilesetElement->IntAttribute("firstgid", 1);
+    XMLDocument tileSet;
+
+    if (tileSet.LoadFile("../../../resources/dirt.tsx") != XML_SUCCESS) {
+        std::cout << "Failed to load TMX file: " << "tileset" << std::endl;
+        return;
+    }
+    XMLElement* tsxRoot = tileSet.FirstChildElement("tileset");
+    if (!tsxRoot) {
+        std::cout << "Invalid tileset file format: " << std::endl;
+        return;
+    }
+
+    // Loop through all tiles
+    for (XMLElement* tileElement = tsxRoot->FirstChildElement("tile");
+        tileElement;
+        tileElement = tileElement->NextSiblingElement("tile")) {
+
+        int tileID = tileElement->IntAttribute("id");
+
+        XMLElement* objectGroup = tileElement->FirstChildElement("objectgroup");
+        if (objectGroup) {
+            collisionTileIDs.insert(firstGid + tileID); // Global ID
+        }
+    }
+
+    std::cout << "Parsed tile-based collisions from: "  << std::endl;
+}
 
 
 
@@ -182,6 +215,11 @@ void World::parseLayer(XMLElement* layerElement) {
 
                 if (globalX >= 0 && globalX < mapWidth && globalY >= 0 && globalY < mapHeight) {
                     tiles[globalY][globalX] = tileValue;
+                    collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
+                    if (collisionTileIDs.count(tileValue) > 0) {
+                        collisionMap[globalY][globalX] = true;
+                    }
+
                 }
                 else {
                     std::cout << "Skipping out-of-bounds tile (" << globalX << ", " << globalY << ")" << std::endl;
@@ -208,7 +246,7 @@ void World::parseLayer(XMLElement* layerElement) {
 
 
 
-void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxml2::XMLElement* layerElement) {
+/*void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxml2::XMLElement* layerElement) {
     if (!objectGroupElement) return;
 
     // Step 1: Find min/max coordinates for normalization
@@ -285,9 +323,10 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
                 }
             }
         }
+        
     }
 
-    // Step 5: Print the final collision map
+    /* Step 5: Print the final collision map
     std::cout << "Final Collision Map (" << mapWidth << "x" << mapHeight << "):\n";
     for (int y = 0; y < mapHeight; y++) {
         for (int x = 0; x < mapWidth; x++) {
@@ -295,9 +334,11 @@ void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxm
         }
         std::cout << std::endl;
     }
-
+    
     std::cout << "Successfully Loaded Collision Layer!" << std::endl;
 }
+*/
+
 
 
 
@@ -417,7 +458,7 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
                 //get column index
                 float tileX = (tileID) % 8 * tileSize;  // Adjusting GID
                 //get row index
-                float tileY = floor((tileID) / 16) * tileSize;
+                float tileY = floor((tileID) / tileSize) * tileSize;
 
                 //portion of tileset imag eto be drawn
                 srcTile = { tileX, tileY, tileSize, tileSize };
@@ -428,7 +469,7 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
 
 
                 //where the tile will be drawn
-                SDL_FRect destTile = { static_cast<float>(tileLocationX), static_cast<float>(tileLocationY), tileSize, tileSize };
+                SDL_FRect destTile = { static_cast<float>(tileLocationX) * zoom, static_cast<float>(tileLocationY) * zoom, tileSize * zoom, tileSize * zoom };
 
 
                // tileLocationsX[y] = tileLocationX;

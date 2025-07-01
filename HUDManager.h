@@ -8,9 +8,11 @@ class Inventory;
 class HUDManager {
 public:
 	HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, float y, Inventory* inventory, int screenWidth, int screenHeight);
-	void render(SDL_Renderer* renderer, int stoneCollected);
+	~HUDManager();
+	void render(SDL_Renderer* renderer);
 
 private:
+	Inventory* inventory;
 	SDL_FRect srcBox;
 	SDL_FRect destBox;
 	SDL_Texture* inventoryBoxTexture;
