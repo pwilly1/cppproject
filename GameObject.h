@@ -5,7 +5,7 @@ class World;
 #include <SDL3_image/SDL_image.h>
 #include <iostream>
 #include <cmath>
-
+class Inventory;
 
 class GameObject {
 
@@ -13,7 +13,7 @@ public:
 
     GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath);
     ~GameObject();
-    void update(float deltaTime);  //  Updates movement
+    void update(float deltaTime, World& world);  //  Updates movement
     void render(SDL_Renderer* renderer, float cameraX, float cameraY); //  Draws the object
     void setVelocity(int dx, int dy); // Sets movement speed
     int getSpeed() const { return speed; }
@@ -31,12 +31,17 @@ public:
     int getPlayerWidth() { return width; }
     void setdy(float dy) { this->dy = dy; }
     bool getBreakMode() { return breakMode; }
+    void setBreakMode(bool set) { breakMode = set; }
     void toggleBreakMode();
+    bool getPlaceMode() const { return placeMode; }
+    void setPlaceMode(bool set) { placeMode = set; }
 
     
 
 
 private:
+    Inventory* inventory;
+    bool placeMode = false;
 	bool breakMode = false;
 	int stoneCollected = 0;
     bool isJumping = false;

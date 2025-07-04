@@ -8,6 +8,7 @@ class GameObject; // Forward declaration to avoid circular dependency
 #include <SDL3_image/SDL_image.h>
 #include "tinyxml2.h"
 #include <unordered_set>
+class Inventory;
 
 class World {
 public:
@@ -20,8 +21,9 @@ public:
     int getMinChunkY() { return minChunkY;}
     int getMinChunkX() { return minChunkX; }
     void checkWallCollisons(GameObject& p, float cameraX, float cameraY);
-    void breakTile(int x, int y);
-
+    void breakTile(int x, int y, Inventory* inventory);
+    void placeTile(int x, int y, Inventory* inventory);
+    void setIsOnGround(bool set) { ground = set; }
     bool isOnGround();
 
 private:
@@ -34,7 +36,7 @@ private:
     int mapWidth, mapHeight;
     float layerOffsetX, layerOffsetY;
     int minChunkX, minChunkY;
-
+    bool ground = false;
     std::vector<std::vector<int>> tiles;
     std::vector<std::vector<bool>> collisionMap; // Collision map
 

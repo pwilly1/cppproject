@@ -18,7 +18,7 @@ private:
 	SDL_Texture* inventoryBoxTexture;
 	TTF_Font* font;
 	TTF_TextEngine* engine;
-	SDL_Texture* texture;
+	SDL_Texture* inventoryItemTexture;
 	float x;
 	float y;
 	int screenWidth;

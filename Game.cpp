@@ -55,7 +55,7 @@ bool Game::init() {
 }
 
 Game::~Game() {
-	cleanup();  // Ensure proper cleanup when the game object is destroyed
+	cleanup(); 
 }
 
 
@@ -125,6 +125,40 @@ void Game::handleEvents() {
 
 			SDL_Keycode key = event.key.key;
 
+			if (key >= SDLK_1 && key <= SDLK_9) {
+				int index = key - SDLK_1; 
+				std::cout << "index: " <<  index << std::endl;
+				inventory->setSelectedIndex(index);
+				if (inventory->getItem().canBreak()) {
+					player->toggleBreakMode();
+				}
+				else {
+					player->setBreakMode(false);
+				}
+				if (inventory->getItem().canPlace()) {
+					player->setPlaceMode(true);
+				}
+				else {
+					player->setPlaceMode(false);
+				}
+
+			}
+			else if (key == SDLK_0) {
+				inventory->setSelectedIndex(9);  // 0 key  index 9
+				if (inventory->getItem().canBreak()) {
+					player->toggleBreakMode();
+				}
+				else{
+					player->setBreakMode(false);
+				}
+				if (inventory->getItem().canPlace()) {
+					player->setPlaceMode(true);
+				}
+				else {
+					player->setPlaceMode(false);
+				}
+			}
+
 			if (key == SDLK_W) {
 				std::cout << "w key\n";
 				player->jump(*world);
@@ -140,7 +174,7 @@ void Game::handleEvents() {
 			}
 			if (key == SDLK_1) {
 				std::cout << "Break mode toggled" << std::endl;
-				player->toggleBreakMode();
+				//player->toggleBreakMode();
 			}
 		}
 
@@ -184,8 +218,9 @@ void Game::run() {
 		}
 
 
-		handleEvents();
 		update(deltaTime);
+		world->checkWallCollisons(*player, cameraX, cameraY);
+		handleEvents();
 		render();
 		
 	}
@@ -193,27 +228,47 @@ void Game::run() {
 }
 
 void Game::update(float deltaTime) {
-
-	world->checkWallCollisons(*player, cameraX, cameraY);
-
 	
-	player->update(deltaTime);
+	player->update(deltaTime, *world);
 
 	// Check for mouse input to break tiles
 	float mouseX, mouseY;
 	Uint32 buttons = SDL_GetMouseState(&mouseX, &mouseY);
 	
-	if (buttons & SDL_BUTTON_LMASK && player->getBreakMode()) {
+	/*if (inventory->getInventory()[inventory->getSelectedIndex()].name.empty()) {
+		player->setBreakMode(false);
+		player->setPlaceMode(false);
+	}
+	*/
+	if (buttons & SDL_BUTTON_LMASK) {
 		float worldX = mouseX / Gzoom + cameraX;
 		float worldY = mouseY / Gzoom + cameraY;
-		world->breakTile(worldX, worldY);
+		if (player->getBreakMode()) {
+		world->breakTile(worldX, worldY, inventory);
+	}
+		else if (player->getPlaceMode()) {
+			world->placeTile(worldX, worldY, inventory);
+			player->setPlaceMode(false);
+		}
 	}
 
 
 	// Move the camera based on the player's position
 	// The camera is centered on the player, adjusting for the screen size
-	cameraX = player->getX() + (player->getPlayerWidth() / 2) - (screenWidth / (2 * Gzoom));
-	cameraY = player->getY() + (player->getPlayerHeight() / 2) - (screenHeight / (2 * Gzoom));
+
+	float targetX = player->getX() + player->getPlayerWidth() / 2 - screenWidth / (2 * Gzoom);
+	float targetY = player->getY() + player->getPlayerHeight() / 2 - screenHeight / (2 * Gzoom);
+
+	// interpolate
+	cameraX += (targetX - cameraX) * 0.1f;
+	cameraY += (targetY - cameraY) * 0.1f;
+
+	// snap to integers before rendering
+	cameraX = floor(cameraX);
+	cameraY = floor(cameraY);
+
+	
+
 }
 
 

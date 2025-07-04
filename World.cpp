@@ -5,6 +5,7 @@
 #include <sstream>
 #include "tinyxml2.h"
 #include <filesystem>  // C++17
+#include "Inventory.h"
     
 using namespace tinyxml2;
 
@@ -215,6 +216,7 @@ void World::parseLayer(XMLElement* layerElement) {
 
                 if (globalX >= 0 && globalX < mapWidth && globalY >= 0 && globalY < mapHeight) {
                     tiles[globalY][globalX] = tileValue;
+                    std::cout << tileValue << std::endl;
                     collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
                     if (collisionTileIDs.count(tileValue) > 0) {
                         collisionMap[globalY][globalX] = true;
@@ -227,7 +229,7 @@ void World::parseLayer(XMLElement* layerElement) {
             }
         }
     }
-    std::cout << "Final Map Representation (" << mapWidth << "x" << mapHeight << "):\n";
+   /* std::cout << "Final Map Representation (" << mapWidth << "x" << mapHeight << "):\n";
     for (int y = 0; y < mapHeight; y++) {
         for (int x = 0; x < mapWidth; x++) {
             if (tiles[y][x] == 0) {
@@ -240,7 +242,7 @@ void World::parseLayer(XMLElement* layerElement) {
         std::cout << std::endl;
     }
 
-
+    */
     std::cout << "Successfully Loaded Infinite TMX Map!" << std::endl;
 }
 
@@ -348,20 +350,44 @@ void World::parseLayer(XMLElement* layerElement) {
 
 
 
-void World::breakTile(int x, int y) {
+void World::breakTile(int x, int y, Inventory* inventory) {
     // Convert coordinates to tile indices
     int tileX = x / tileSize;
     int tileY = y / tileSize;
     // Check if the tile is within bounds
     if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
         // Set the tile to 0 (empty)
+        if (tiles[tileY][tileX] == 22) {
+                    inventory->addItem("stone", 1, "../../../resources/stone.png");
+                    std::cout << "Tile at (" << tileX << ", " << tileY << ") broken." << std::endl;
+                }
         tiles[tileY][tileX] = 0;
         collisionMap[tileY][tileX] = 0;
-        std::cout << "Tile at (" << tileX << ", " << tileY << ") broken." << std::endl;
-    } else {
+        
+    } 
+    else 
+    {
         std::cout << "Tile coordinates out of bounds: (" << tileX << ", " << tileY << ")" << std::endl;
     }
 }
+
+
+void World::placeTile(int x, int y, Inventory* inventory) {
+    int tileX = x / tileSize;
+    int tileY = y / tileSize;
+
+    if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
+        if (tiles[tileY][tileX] == 0) {
+            tiles[tileY][tileX] = 22;
+            collisionMap[tileY][tileX] = 1;
+            inventory->removeItem("stone", 1);
+
+        }
+    }
+
+
+}
+
 
 
 
@@ -371,6 +397,7 @@ void World::breakTile(int x, int y) {
 //AABB Wall Collision Detection
 
 void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
+    //setIsOnGround(false);
 
     for (int i = 0; i < mapHeight; i++) {
         for (int j = 0; j < mapWidth; j++) {
@@ -391,6 +418,7 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
                         int overlapY = combinedHalfH - abs(distY);
                         //we need to look for smallest overlap
                         if (overlapX >= overlapY) {
+                            
                             //correct Y position
                             //intersecting top side because if cell is above player that means player height - cell position is positive
                             if (distY > 0) {
@@ -398,10 +426,12 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
                             }
                             else {
 								// std::cout << "is on ground" << std::endl;
-                                isOnGround();
+                                
                                 p.setY(p.getY() - overlapY); //move up
+                                if (distY <= 0 && overlapY >= 0){
+                                    setIsOnGround(true);
+                                }
                             }
-
                             // NEW FIX:
                             p.setdy(0);  // stop vertical velocity after vertical collision
                         }//end Y corrections
@@ -416,8 +446,8 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
                             }
                         }
                     }//end y overlap
+                    
                 }//end x overlap
-
 
             }//endcollisionMap
         }//end columns
@@ -425,7 +455,7 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
 }
 
 bool World::isOnGround() {
-    return true;
+    return ground;
 }
 
 

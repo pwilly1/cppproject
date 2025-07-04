@@ -1,11 +1,12 @@
 #include "GameObject.h"
 #include "World.h"
 #include <iostream>
+#include "Inventory.h"
 
 GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath) {
     std::cout << "GameObject constructor called!" << std::endl;
 
-
+    this->inventory = inventory;
     this->x = x;
     this->y = y;
     this->width = 0;
@@ -76,20 +77,17 @@ bool GameObject::isOnGround() {
 }
 */
 
-void GameObject::update(float deltaTime) {
+void GameObject::update(float deltaTime, World& world) {
 
 
     dy += gravity * deltaTime;
+    
 
     x += dx * deltaTime;
     y += dy * deltaTime;
+   
 
-   /* if (isOnGround() == true) {  // Prevents the object from sinking into the ground
-        y = groundLevel - height;
-        
-        isJumping = false;
-    }
-    */
+
 
     destRect.x = static_cast<int>(x);
     destRect.y = static_cast<int>(y);
@@ -138,11 +136,14 @@ void GameObject::toggleBreakMode() {
 }
 
 
+
+
 void GameObject::jump(World& world) {
     if (world.isOnGround() == true) {
         std::cout << "jumpiscALLED" << std::endl;
         dy = -jumpPower;
         isJumping = true;
+        world.setIsOnGround(false);
     }
     
 }
