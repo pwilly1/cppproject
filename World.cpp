@@ -216,7 +216,7 @@ void World::parseLayer(XMLElement* layerElement) {
 
                 if (globalX >= 0 && globalX < mapWidth && globalY >= 0 && globalY < mapHeight) {
                     tiles[globalY][globalX] = tileValue;
-                    std::cout << tileValue << std::endl;
+                    //std::cout << tileValue << std::endl;
                     collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
                     if (collisionTileIDs.count(tileValue) > 0) {
                         collisionMap[globalY][globalX] = true;
@@ -404,10 +404,10 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
             if (collisionMap[i][j] == true) {
                 // calculating distance from player and collision tile using their centers
                 //I am using tileSize instead of tile width and tile height because my tiles are sqaures but If I wanted to not use sqaure I would have to use tile height and width instead of tileSize
-                int distX = floor(p.getX() + p.getPlayerWidth() / 2) - (j * tileSize + tileSize / 2);
-                int distY = floor(p.getY() + p.getPlayerHeight() / 2) - (i * tileSize + tileSize / 2);
-                int combinedHalfW = floor(p.getPlayerWidth() / 2) + (tileSize / 2);
-                int combinedHalfH = floor(p.getPlayerHeight() / 2) + (tileSize / 2);
+                int distX = floor(p.getX() + p.getWidth() / 2) - (j * tileSize + tileSize / 2);
+                int distY = floor(p.getY() + p.getHeight() / 2) - (i * tileSize + tileSize / 2);
+                int combinedHalfW = floor(p.getWidth() / 2) + (tileSize / 2);
+                int combinedHalfH = floor(p.getHeight() / 2) + (tileSize / 2);
 
                 //check for x overlap
                 if (abs(distX) < combinedHalfW) {
@@ -429,7 +429,7 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
                                 
                                 p.setY(p.getY() - overlapY); //move up
                                 if (distY <= 0 && overlapY >= 0){
-                                    setIsOnGround(true);
+                                    p.setIsOnGround(true);
                                 }
                             }
                             // NEW FIX:

@@ -1,7 +1,8 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include "Game.h"
-
+#include "Player.h"
+#include "BasicEnemy.h"
 
 Game::Game() {
 	renderer = nullptr;
@@ -47,9 +48,10 @@ bool Game::init() {
 
 	world = new World(renderer);
 	world->loadFromTMX("../../../resources/map.tmx");
+	enemy = new BasicEnemy(700, 1020, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png");
 
 
-	player = new GameObject(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/idle.png");
+	player = new Player(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
 
 	return true;
 }
@@ -67,7 +69,7 @@ void Game::render() {
 
 	world->render(renderer, cameraX, cameraY, screenWidth, screenHeight);
 
-
+	enemy->render(renderer, cameraX, cameraY);
 	player->render(renderer, cameraX, cameraY);
 	HUD->render(renderer);
 
@@ -161,7 +163,7 @@ void Game::handleEvents() {
 
 			if (key == SDLK_W) {
 				std::cout << "w key\n";
-				player->jump(*world);
+				player->jump();
 				
 			}
 			if (key == SDLK_S) player->setVelocity(player->getdx(), player->getSpeed());   // Move Down
@@ -219,6 +221,7 @@ void Game::run() {
 
 
 		update(deltaTime);
+		world->checkWallCollisons(*enemy, cameraX, cameraY);
 		world->checkWallCollisons(*player, cameraX, cameraY);
 		handleEvents();
 		render();
@@ -229,7 +232,8 @@ void Game::run() {
 
 void Game::update(float deltaTime) {
 	
-	player->update(deltaTime, *world);
+	enemy->update(deltaTime);
+	player->update(deltaTime);
 
 	// Check for mouse input to break tiles
 	float mouseX, mouseY;
@@ -256,8 +260,8 @@ void Game::update(float deltaTime) {
 	// Move the camera based on the player's position
 	// The camera is centered on the player, adjusting for the screen size
 
-	float targetX = player->getX() + player->getPlayerWidth() / 2 - screenWidth / (2 * Gzoom);
-	float targetY = player->getY() + player->getPlayerHeight() / 2 - screenHeight / (2 * Gzoom);
+	float targetX = player->getX() + player->getWidth() / 2 - screenWidth / (2 * Gzoom);
+	float targetY = player->getY() + player->getHeight() / 2 - screenHeight / (2 * Gzoom);
 
 	// interpolate
 	cameraX += (targetX - cameraX) * 0.1f;

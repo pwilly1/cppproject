@@ -6,16 +6,10 @@
 GameObject::GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath) {
     std::cout << "GameObject constructor called!" << std::endl;
 
-    this->inventory = inventory;
     this->x = x;
     this->y = y;
-    this->width = 0;
-    this->height = 0;
     this->dx = 0;
     this->dy = 0;
-    this->speed = 99;
-    this->texture = nullptr;
-    this->stoneCollected = 10;
 
     if (!renderer) {
         std::cout << "Renderer is NULL before loading texture!" << std::endl;
@@ -61,41 +55,23 @@ GameObject::~GameObject() {
 }
 
 
-void GameObject::SetGroundLevel() {
-
-}
-
-
-/*
-bool GameObject::isOnGround() {
-    if (y >= groundLevel - height) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-*/
-
-void GameObject::update(float deltaTime, World& world) {
-
-
-    dy += gravity * deltaTime;
-    
-
-    x += dx * deltaTime;
-    y += dy * deltaTime;
-   
-
-
-
+void GameObject::update(float deltaTime) {
+    applyPhysics(deltaTime);
     destRect.x = static_cast<int>(x);
     destRect.y = static_cast<int>(y);
 
+}
 
+void GameObject::applyPhysics(float deltaTime) {
+    dy += gravity * deltaTime;
+    x += dx * deltaTime;
+    y += dy * deltaTime;
 }
 void GameObject::render(SDL_Renderer* renderer, float cameraX, float cameraY) {
-
+    if (!texture) {
+        std::cout << "Warning: GameObject has NULL texture!" << std::endl;
+        return;
+    }
 	// I subtracted cameraX and cameraY from the x and y coordinates to ensure that the object is rendered in world coordinates so it lines up with the map render.
 	// It basically makes the camera the origin of the world, so the object is rendered relative to the camera position.
 	// It does not change the actual x and y coordinates of the object, it just changes where it is rendered on the screen.
@@ -126,24 +102,13 @@ bool GameObject::getIsJumping() {
     return isJumping;
 }
 
-void GameObject::toggleBreakMode() {
-    if(breakMode == false) {
-        breakMode = true;
-    }
-    else {
-        breakMode = false;
-	}
-}
 
-
-
-
-void GameObject::jump(World& world) {
-    if (world.isOnGround() == true) {
+void GameObject::jump() {
+    if (isOnGround == true) {
         std::cout << "jumpiscALLED" << std::endl;
         dy = -jumpPower;
         isJumping = true;
-        world.setIsOnGround(false);
+        setIsOnGround(false);
     }
     
 }

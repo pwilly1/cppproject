@@ -12,49 +12,47 @@ class GameObject {
 public:
 
     GameObject(int x, int y, SDL_Renderer* renderer, const std::string& imagePath);
-    ~GameObject();
-    void update(float deltaTime, World& world);  //  Updates movement
-    void render(SDL_Renderer* renderer, float cameraX, float cameraY); //  Draws the object
-    void setVelocity(int dx, int dy); // Sets movement speed
-    int getSpeed() const { return speed; }
-    int getdx() { return dx; }
-    int getdy() { return dy; }
-    bool getIsJumping();
-    void jump(World& world);
-    //bool isOnGround();
-    void SetGroundLevel();
-    void setX(int x) { this->x = x; }
-    void setY(int y) { this->y = y; }
-    int getX() { return x; }
-    int getY() { return y; }
-    int getPlayerHeight() { return height; }
-    int getPlayerWidth() { return width; }
+    virtual ~GameObject();
+
+    virtual void update(float deltaTime);
+    virtual void render(SDL_Renderer* renderer, float cameraX, float cameraY);
+    void jump();
+
+    void setVelocity(int dx, int dy);
+    void setX(float x) { this->x = x; }
+    void setY(float y) { this->y = y; }
+    void setdx(float x) { this->dx = dx;  }
     void setdy(float dy) { this->dy = dy; }
-    bool getBreakMode() { return breakMode; }
-    void setBreakMode(bool set) { breakMode = set; }
-    void toggleBreakMode();
-    bool getPlaceMode() const { return placeMode; }
-    void setPlaceMode(bool set) { placeMode = set; }
+    void setIsOnGround(bool set) { isOnGround = set; }
 
-    
+    bool getIsJumping();
+    float getX() const { return x; }
+    float getY() const { return y; }
+    int getdx() const { return dx; }
+    int getdy() const { return dy; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+    int getSpeed() const { return speed; }
+    SDL_FRect getDestRect() { return destRect; }
 
+    SDL_FRect srcRect, destRect;
+
+protected:
+    SDL_Texture* texture = nullptr;
+
+    float x, y;
+    int width, height;
+    int dx = 0, dy = 0;
+    int speed = 99;
+
+    float gravity = 400.0f;
+
+    void applyPhysics(float deltaTime);
 
 private:
-    Inventory* inventory;
-    bool placeMode = false;
-	bool breakMode = false;
-	int stoneCollected = 0;
+    bool isOnGround = false;
     bool isJumping = false;
     float jumpPower = 300;
-    const float gravity = 400;
-    float groundLevel = 450;
-    SDL_FRect srcRect;  // Source rectangle for cropping the sprite sheet
-    SDL_FRect destRect;
-    float x, y; //  Position
-    int width, height; //  Size
-    int dx, dy; //  Velocity
-    SDL_Texture* texture;  // Store the image texture
-    int speed;
 };
 
 #endif

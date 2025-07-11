@@ -8,6 +8,8 @@
 #include "HUDManager.h"
 #include "Inventory.h"
 
+class BasicEnemy;
+class Player;
 class World;
 class Game {
 public:
@@ -23,6 +25,7 @@ public:
 	void update(float deltaTime);
 
 private:
+	BasicEnemy* enemy;
 	float Gzoom = 2;
 	Inventory* inventory;
 	HUDManager* HUD;
@@ -33,7 +36,7 @@ private:
 	int screenHeight;
 	int winw, winh;
 	SDL_Texture* backgroundTexture;
-	GameObject* player;
+	Player* player;
 	SDL_Event event;
 	SDL_Renderer* renderer;
 	SDL_Window* window = nullptr; //window pointer object that points to window created.
