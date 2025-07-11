@@ -13,3 +13,18 @@ void EnemyNPC::takeDamage(int dmg) {
 bool EnemyNPC::isAlive() const {
     return health > 0;
 }
+
+void EnemyNPC::chaseTarget(GameObject* target) {
+    float targetX = target->getX();
+
+    if (targetX < getX()) {
+        setdx(-getSpeed() / 2);  // chase left
+    }
+    else if (targetX > getX()) {
+        setdx(getSpeed() / 2);   // chase right
+    }
+    else {
+        setdx(0);  // stop if already aligned
+    }
+    std::cout << "enemy dx postion: " << getdx() << std::endl;
+}

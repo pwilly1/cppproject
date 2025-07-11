@@ -248,6 +248,11 @@ void World::parseLayer(XMLElement* layerElement) {
 
 
 
+
+
+//            This is the old collision map parser that parsed collision objects instead of tiles
+
+
 /*void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxml2::XMLElement* layerElement) {
     if (!objectGroupElement) return;
 

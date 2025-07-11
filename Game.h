@@ -25,6 +25,8 @@ public:
 	void update(float deltaTime);
 
 private:
+	float HUDLocationX = 10;
+	float HUDLocationY = 10;
 	BasicEnemy* enemy;
 	float Gzoom = 2;
 	Inventory* inventory;

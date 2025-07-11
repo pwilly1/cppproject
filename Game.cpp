@@ -44,14 +44,14 @@ bool Game::init() {
 
 	inventory = new Inventory();
 
-	HUD = new HUDManager(textEngine, renderer, 10, 10, inventory, screenWidth, screenHeight);
+	HUD = new HUDManager(textEngine, renderer, HUDLocationX, HUDLocationY, inventory, screenWidth, screenHeight);
 
 	world = new World(renderer);
 	world->loadFromTMX("../../../resources/map.tmx");
-	enemy = new BasicEnemy(700, 1020, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png");
 
 
 	player = new Player(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
+	enemy = new BasicEnemy(700, 1020, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
 
 	return true;
 }
@@ -232,8 +232,8 @@ void Game::run() {
 
 void Game::update(float deltaTime) {
 	
-	enemy->update(deltaTime);
 	player->update(deltaTime);
+	enemy->update(deltaTime);
 
 	// Check for mouse input to break tiles
 	float mouseX, mouseY;

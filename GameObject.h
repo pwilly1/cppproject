@@ -21,7 +21,7 @@ public:
     void setVelocity(int dx, int dy);
     void setX(float x) { this->x = x; }
     void setY(float y) { this->y = y; }
-    void setdx(float x) { this->dx = dx;  }
+    void setdx(float dx) { this->dx = dx;  }
     void setdy(float dy) { this->dy = dy; }
     void setIsOnGround(bool set) { isOnGround = set; }
 
@@ -41,7 +41,7 @@ protected:
     SDL_Texture* texture = nullptr;
 
     float x, y;
-    int width, height;
+    int width, height = 0;
     int dx = 0, dy = 0;
     int speed = 99;
 
