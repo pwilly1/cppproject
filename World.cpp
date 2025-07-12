@@ -6,6 +6,8 @@
 #include "tinyxml2.h"
 #include <filesystem>  // C++17
 #include "Inventory.h"
+#include <cstdlib>
+#include <ctime>
     
 using namespace tinyxml2;
 
@@ -44,15 +46,11 @@ void World::loadFromTMX(const std::string& filename) {
         return;
     }
 
-    //retreiving information from mapElement
-
-
 
 	//mapwidth and mapheight from tmx file are useless because I am using infinite map mode so I will calculate correct map size based on chunks in the parsing
-    mapWidth = mapElement->IntAttribute("width");
-    std::cout << "Map Width: " << mapWidth << std::endl;
-
-    mapHeight = mapElement->IntAttribute("height");
+    // mapWidth = mapElement->IntAttribute("width");
+    // std::cout << "Map Width: " << mapWidth << std::endl;
+    // mapHeight = mapElement->IntAttribute("height");
     tileSize = mapElement->IntAttribute("tilewidth");
 
 
@@ -73,7 +71,8 @@ void World::loadFromTMX(const std::string& filename) {
         std::cout << "No layer element found." << std::endl;
         return;
     }
-    parseLayer(layerElement);
+    generateMap(100, 100);
+    //parseLayer(layerElement);
    
    //  XMLElement* collisionLayer = groupElement->FirstChildElement("objectgroup");
    // parseCollisionLayer(collisionLayer, layerElement);
@@ -121,7 +120,80 @@ void World::parseTileset(XMLElement* tilesetElement) {
 
 
 
+void World::generateMap(int width, int height) {
+    std::cout << "generate map called" << std::endl;
+    mapWidth = width;
+    mapHeight = height;
+    minChunkX = 0;
+    minChunkY = 0;
 
+    int fillProbability = 35;
+    int iterations = 5;
+
+    tiles.resize(mapHeight, std::vector<int>(mapWidth, 0));
+    collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
+    std::cout << "collision map size and tile map size " << collisionMap.size() << tiles.size() << std::endl;
+    srand(static_cast<unsigned int>(time(nullptr)));
+
+    // Random initialization
+    for (int y = 0; y < mapHeight; y++) {
+        for (int x = 0; x < mapWidth; x++) {
+            if (y == 0 || y == mapHeight - 1 || x == 0 || x == mapWidth - 1) {
+                tiles[y][x] = static_cast<int>(TileID::STONE); // border always stone
+            }
+            else {
+                tiles[y][x] = (rand() % 100 < fillProbability) ? static_cast<int>(TileID::STONE) : static_cast<int>(TileID::AIR);
+            }
+        }
+    }
+
+    // Smooth the map
+    for (int step = 0; step < iterations; step++) {
+        std::vector<std::vector<int>> newTiles = tiles;
+
+        for (int y = 1; y < mapHeight - 1; y++) {
+            for (int x = 1; x < mapWidth - 1; x++) {
+                int wallCount = 0;
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (tiles[y + dy][x + dx] == static_cast<int>(TileID::STONE)) {
+                            wallCount++;
+                        }
+                    }
+                }
+
+                // Apply cellular automata rules
+                if (wallCount >= 4) {
+                    newTiles[y][x] = static_cast<int>(TileID::STONE);
+                }
+                else {
+                    newTiles[y][x] = static_cast<int>(TileID::AIR);
+                }
+            }
+        }
+
+        tiles = newTiles; // copy smoothed map
+    }
+
+    // Step 3: Update collisionMap
+    for (int y = 0; y < mapHeight; y++) {
+        for (int x = 0; x < mapWidth; x++) {
+            collisionMap[y][x] = (tiles[y][x] == static_cast<int>(TileID::STONE));
+        }
+    }
+    std::cout << "mapHeight: " << mapHeight << ", mapWidth: " << mapWidth << std::endl;
+    std::cout << "collisionMap size: " << collisionMap.size() << " x "
+        << (collisionMap.empty() ? 0 : collisionMap[0].size()) << std::endl;
+}
+
+
+
+
+
+
+//will use later
+
+/*
 void World::parseLayer(XMLElement* layerElement) {
 
 	std::cout << "starting parseLayer" << std::endl;
@@ -229,7 +301,7 @@ void World::parseLayer(XMLElement* layerElement) {
             }
         }
     }
-   /* std::cout << "Final Map Representation (" << mapWidth << "x" << mapHeight << "):\n";
+    std::cout << "Final Map Representation (" << mapWidth << "x" << mapHeight << "):\n";
     for (int y = 0; y < mapHeight; y++) {
         for (int x = 0; x < mapWidth; x++) {
             if (tiles[y][x] == 0) {
@@ -242,114 +314,10 @@ void World::parseLayer(XMLElement* layerElement) {
         std::cout << std::endl;
     }
 
-    */
+    
     std::cout << "Successfully Loaded Infinite TMX Map!" << std::endl;
 }
-
-
-
-
-
-//            This is the old collision map parser that parsed collision objects instead of tiles
-
-
-/*void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxml2::XMLElement* layerElement) {
-    if (!objectGroupElement) return;
-
-    // Step 1: Find min/max coordinates for normalization
-    int minX = INT_MAX, minY = INT_MAX;
-    int maxX = INT_MIN, maxY = INT_MIN;
-
-    for (tinyxml2::XMLElement* objectElement = objectGroupElement->FirstChildElement("object");
-        objectElement;
-        objectElement = objectElement->NextSiblingElement("object")) {
-
-        float xRaw = objectElement->FloatAttribute("x");
-        float yRaw = objectElement->FloatAttribute("y");
-        float widthRaw = objectElement->FloatAttribute("width", tileSize);
-        float heightRaw = objectElement->FloatAttribute("height", tileSize);
-
-
-        //I am dividing by tilesize because the tmx file has the coordinates as normal number coordinates
-        int x = static_cast<int>(std::round(xRaw / tileSize));
-        int y = static_cast<int>(std::round(yRaw / tileSize));
-        int width = static_cast<int>(std::round(widthRaw / tileSize));
-        int height = static_cast<int>(std::round(heightRaw / tileSize));
-
-        if (width == 0) width = 1;
-        if (height == 0) height = 1;
-
-        minX = std::min(minX, x);
-        minY = std::min(minY, y);
-        maxX = std::max(maxX, x + width);
-        maxY = std::max(maxY, y + height);
-    }
-
-    // Step 2: Normalize the collision map dimensions
-    
-    collisionMap.clear();
-    collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
-
-    std::cout << "Determined Collision Map Size: " << mapWidth << "x" << mapHeight << std::endl;
-
-
-
-
-    // Step 3: Process objects with adjusted offsets
-    for (tinyxml2::XMLElement* objectElement = objectGroupElement->FirstChildElement("object");
-        objectElement;
-        objectElement = objectElement->NextSiblingElement("object")) {
-
-        float xRaw = objectElement->FloatAttribute("x");
-        float yRaw = objectElement->FloatAttribute("y");
-        float widthRaw = objectElement->FloatAttribute("width", tileSize);
-        float heightRaw = objectElement->FloatAttribute("height", tileSize);
-
-        std::cout << "minCHUNKKKKKKKKKKKK" << this->minChunkX << std::endl;
-
-        int x = static_cast<int>(std::round(xRaw / tileSize)) - this->minChunkX; // - minX;  // Normalize X
-        int y = static_cast<int>(std::round(yRaw / tileSize)) - this->minChunkY; //- minY;  // Normalize Y
-        int width = static_cast<int>(std::round(widthRaw / tileSize));
-        int height = static_cast<int>(std::round(heightRaw / tileSize));
-
-        if (width == 0) width = 1;
-        if (height == 0) height = 1;
-
-        std::cout << "Processing collision object at (" << x << ", " << y << ") size: "
-            << width * tileSize << "x" << height * tileSize << std::endl;
-     
-
-        // Step 4: Mark the collision tiles in the normalized map
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                int tileX = (x + i); 
-                int tileY = (y + j); 
-                //std::cout << "y j: " << y + j << "tiley: " << tileY << "off: " << layerOffsetY << std::endl;
-                if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
-                    collisionMap[tileY][tileX] = true;
-                }
-            }
-        }
-        
-    }
-
-    /* Step 5: Print the final collision map
-    std::cout << "Final Collision Map (" << mapWidth << "x" << mapHeight << "):\n";
-    for (int y = 0; y < mapHeight; y++) {
-        for (int x = 0; x < mapWidth; x++) {
-            std::cout << (collisionMap[y][x] ? "#" : ".");
-        }
-        std::cout << std::endl;
-    }
-    
-    std::cout << "Successfully Loaded Collision Layer!" << std::endl;
-}
 */
-
-
-
-
-
 
 
 
@@ -377,6 +345,9 @@ void World::breakTile(int x, int y, Inventory* inventory) {
 }
 
 
+
+
+
 void World::placeTile(int x, int y, Inventory* inventory) {
     int tileX = x / tileSize;
     int tileY = y / tileSize;
@@ -402,13 +373,24 @@ void World::placeTile(int x, int y, Inventory* inventory) {
 //AABB Wall Collision Detection
 
 void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
+    //std::cout << "check wall collisions called";
     //setIsOnGround(false);
 
-    for (int i = 0; i < mapHeight; i++) {
-        for (int j = 0; j < mapWidth; j++) {
+    //only check tiles around gameObject
+    int startRow = std::max(0, static_cast<int>((p.getY() - 100) / tileSize));
+    int endRow = std::min(mapHeight, static_cast<int>((p.getY() + p.getHeight() + 100) / tileSize));
+
+    int startCol = std::max(0, static_cast<int>((p.getX() - 100) / tileSize));
+    int endCol = std::min(mapWidth, static_cast<int>((p.getX() + p.getWidth() + 100) / tileSize));
+
+    for (int i = startRow; i < endRow; i++) {
+        for (int j = startCol; j < endCol; j++) {
+
             if (collisionMap[i][j] == true) {
                 // calculating distance from player and collision tile using their centers
                 //I am using tileSize instead of tile width and tile height because my tiles are sqaures but If I wanted to not use sqaure I would have to use tile height and width instead of tileSize
+               // std::cout << "Checking object at: " << &p << ", x: " << p.getX() << ", y: " << p.getY() << std::endl;
+
                 int distX = floor(p.getX() + p.getWidth() / 2) - (j * tileSize + tileSize / 2);
                 int distY = floor(p.getY() + p.getHeight() / 2) - (i * tileSize + tileSize / 2);
                 int combinedHalfW = floor(p.getWidth() / 2) + (tileSize / 2);
@@ -416,7 +398,6 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
 
                 //check for x overlap
                 if (abs(distX) < combinedHalfW) {
-
                     //check for y overlap
                     if (abs(distY) < combinedHalfH) {
                         int overlapX = combinedHalfW - abs(distX);

@@ -26,5 +26,4 @@ void EnemyNPC::chaseTarget(GameObject* target) {
     else {
         setdx(0);  // stop if already aligned
     }
-    std::cout << "enemy dx postion: " << getdx() << std::endl;
 }

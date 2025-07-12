@@ -50,8 +50,8 @@ bool Game::init() {
 	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	player = new Player(550, 1030, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
-	enemy = new BasicEnemy(700, 1020, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
+	player = new Player(550, 700, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
+	enemy = new BasicEnemy(700, 700, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
 
 	return true;
 }
@@ -221,8 +221,12 @@ void Game::run() {
 
 
 		update(deltaTime);
-		world->checkWallCollisons(*enemy, cameraX, cameraY);
-		world->checkWallCollisons(*player, cameraX, cameraY);
+		if (enemy) {
+			world->checkWallCollisons(*enemy, cameraX, cameraY);
+		}
+		if (player) {
+			world->checkWallCollisons(*player, cameraX, cameraY);
+		}
 		handleEvents();
 		render();
 		
