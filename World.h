@@ -2,6 +2,7 @@
 #define WORLD_H
 
 class GameObject; // Forward declaration to avoid circular dependency
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <SDL3/SDL.h>
@@ -23,10 +24,13 @@ public:
     World(SDL_Renderer* renderer);
     ~World();
     void loadFromTMX(const std::string& filename);
+    void loadBackground(const std::string& path, const std::string& background);
+    void updateBackgroundForPlayer(float playerX, float playerY);
+    void setCurrentBackground(const std::string& background);
     void generateMap(int width, int height);
     void fillWorld();
     void generateCaves(float fillProbability = 0.45f, int smoothingSteps = 5);
-    void generateOreVeins(int numVeins = 30, int veinSize = 5);
+    void generateOreVeins(int numVeins = 500, int veinSize = 5);
 
 
 
@@ -42,6 +46,9 @@ public:
     bool isOnGround();
 
 private:
+    std::string currentBackground;
+    SDL_Renderer* renderer;
+    std::unordered_map<std::string, SDL_Texture*> backgroundTextures;
     std::unordered_set<int> collisionTileIDs;
     float zoom = 2;
     std::vector<int> tileLocationsX; //tile locations for rendering

@@ -21,6 +21,8 @@ void Inventory::addItem(const std::string& name, int amount, const std::string& 
 void Inventory::removeItem(const std::string& name, int amount) {
 
 	if (!inventoryVector[selectedIndex].name.empty()) {
-		inventoryVector.erase(inventoryVector.begin() + selectedIndex);
+		inventoryVector[selectedIndex].name = "";
+		inventoryVector[selectedIndex].amount = 0;
+		inventoryVector[selectedIndex].filename = "";
 	}
 }

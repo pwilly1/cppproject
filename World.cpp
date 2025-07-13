@@ -14,7 +14,7 @@ using namespace tinyxml2;
 World::World(SDL_Renderer* renderer) {  
     std::cout << "Attempting to load tileset texture from: ../../../resources/Cave Tiles/Cave Tiles.png" << std::endl;
     std::cout << "Current Working Directory: " << std::filesystem::current_path() << std::endl;
-
+    this->renderer = renderer;
     tilesetTexture = IMG_LoadTexture(renderer, "C:/Users/prwil/source/repos/pwilly1/cppproject/resources/Cave Tiles/Cave Tiles.png");
     if (!tilesetTexture) {
         std::cout << "Failed to load tileset(world.cpp): " << SDL_GetError() << std::endl;
@@ -116,6 +116,38 @@ void World::parseTileset(XMLElement* tilesetElement) {
 
     std::cout << "Parsed tile-based collisions from: "  << std::endl;
 }
+
+
+
+void World::loadBackground(const std::string& path, const std::string& background) {
+   /* auto it = backgroundTextures.find(background);
+    if (it != backgroundTextures.end() && it->second) {
+        SDL_DestroyTexture(it->second);
+        it->second = nullptr;
+    }
+    */
+    SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
+    if (!newTexture) {
+        std::cout << "Failed to load background from '" << path << "': " << SDL_GetError() << std::endl;
+        return;
+    }
+    currentBackground = "cave";
+    backgroundTextures[background] = newTexture;
+}
+
+
+void World::updateBackgroundForPlayer(float playerX, float playerY) {
+    if (playerY < 200) {
+        std::cout << "surface background\n";
+        loadBackground("resources/backgrounds/surface.png", "surface");
+    }
+    else {
+        std::cout << "cave background\n";
+
+        loadBackground("../../../resources/Background Cave/05 rocksfront.png", "cave");
+    }
+}
+
 
 
 void World::fillWorld() {
@@ -470,10 +502,27 @@ bool World::isOnGround() {
     return ground;
 }
 
+void World::setCurrentBackground(const std::string& background) {
+    if (backgroundTextures.count(background)) {
+        currentBackground = background;
+    }
+    else {
+        std::cout << "Background '" << background << "' not loaded yet!" << std::endl;
+    }
+}
 
 
 
 void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenWidth, int screenHeight) {
+
+    if (!currentBackground.empty() && backgroundTextures[currentBackground]) {
+        SDL_Texture* bg = backgroundTextures[currentBackground];
+
+        SDL_FRect dst = { 0, 0, static_cast<float>(screenWidth), static_cast<float>(screenHeight) };
+        SDL_RenderTexture(renderer, bg, nullptr, &dst);
+    }
+
+
     if (tiles.empty() || tiles[0].empty()) {
         std::cout << "Tiles vector is not properly initialized." << std::endl;
     }
@@ -524,7 +573,7 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
         }
     }
     // Enable transparency for collision overlay
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+   // SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     // Render collision map overlay
     /*SDL_SetRenderDrawColor(renderer, 255, 0, 0, 120);  // Red with 120 alpha

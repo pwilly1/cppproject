@@ -64,9 +64,10 @@ Game::~Game() {
 
 void Game::render() {
 
-	SDL_SetRenderDrawColor(renderer, 60, 34, 15, 255);
+	
+	//SDL_SetRenderDrawColor(renderer, 60, 34, 15, 255);
 	SDL_RenderClear(renderer);
-
+	world->updateBackgroundForPlayer(player->getX(), player->getY());
 	world->render(renderer, cameraX, cameraY, screenWidth, screenHeight);
 
 	enemy->render(renderer, cameraX, cameraY);
