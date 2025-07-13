@@ -15,7 +15,8 @@ public:
 
     enum class TileID {
         AIR = 0,
-        STONE = 22,
+        STONE = 21,
+        ORE = 25,
     };
 
 
@@ -23,6 +24,12 @@ public:
     ~World();
     void loadFromTMX(const std::string& filename);
     void generateMap(int width, int height);
+    void fillWorld();
+    void generateCaves(float fillProbability = 0.45f, int smoothingSteps = 5);
+    void generateOreVeins(int numVeins = 30, int veinSize = 5);
+
+
+
     void render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenWidth, int screenHeight);
     std::vector<int> getTileLocationsX() { return tileLocationsX; }
     std::vector<int> getTileLocationsY() { return tileLocationsY; }
@@ -41,14 +48,15 @@ private:
     std::vector<int> tileLocationsY;
     SDL_Texture* tilesetTexture;
     float tileSize = 16;
-    int mapWidth, mapHeight;
+    int mapWidth = 300, mapHeight = 300;
     float layerOffsetX, layerOffsetY = 0;
     int minChunkX, minChunkY;
     bool ground = false;
+    std::vector<std::vector<bool>> customMap;
     std::vector<std::vector<int>> tiles;
     std::vector<std::vector<bool>> collisionMap; // Collision map
     void parseTileset(tinyxml2::XMLElement* tilesetElement);
-    //void parseLayer(tinyxml2::XMLElement* layerElement);
+    void parseLayer(tinyxml2::XMLElement* layerElement);
     //void World::parseCollisionLayer(tinyxml2::XMLElement* objectGroupElement, tinyxml2::XMLElement* layerElement);
 
 };

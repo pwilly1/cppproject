@@ -4,6 +4,8 @@
 
 int main() {
 	std::cout << "Main function started!" << std::endl;
+	srand(static_cast<unsigned>(time(nullptr)));
+
 	Game game;
 	if(game.init()) {
 

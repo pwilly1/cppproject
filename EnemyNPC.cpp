@@ -16,6 +16,10 @@ bool EnemyNPC::isAlive() const {
 
 void EnemyNPC::chaseTarget(GameObject* target) {
     float targetX = target->getX();
+    if (getHorozontalCollision()) {
+        jump();
+        setHorozontalCollision(false);
+    }
 
     if (targetX < getX()) {
         setdx(-getSpeed() / 2);  // chase left

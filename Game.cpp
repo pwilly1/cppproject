@@ -50,8 +50,8 @@ bool Game::init() {
 	world->loadFromTMX("../../../resources/map.tmx");
 
 
-	player = new Player(550, 700, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
-	enemy = new BasicEnemy(700, 700, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
+	player = new Player(1000, 700, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
+	enemy = new BasicEnemy(1020, 700, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
 
 	return true;
 }

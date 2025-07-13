@@ -24,8 +24,10 @@ public:
     void setdx(float dx) { this->dx = dx;  }
     void setdy(float dy) { this->dy = dy; }
     void setIsOnGround(bool set) { isOnGround = set; }
+    void setHorozontalCollision(bool set) { horozontalCollision = set;  }
 
     bool getIsJumping();
+    bool getHorozontalCollision() { return horozontalCollision; }
     float getX() const { return x; }
     float getY() const { return y; }
     int getdx() const { return dx; }
@@ -50,6 +52,7 @@ protected:
     void applyPhysics(float deltaTime);
 
 private:
+    bool horozontalCollision = false;
     bool isOnGround = false;
     bool isJumping = false;
     float jumpPower = 300;

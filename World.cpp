@@ -72,8 +72,8 @@ void World::loadFromTMX(const std::string& filename) {
         return;
     }
     generateMap(100, 100);
-    //parseLayer(layerElement);
-   
+    parseLayer(layerElement);
+
    //  XMLElement* collisionLayer = groupElement->FirstChildElement("objectgroup");
    // parseCollisionLayer(collisionLayer, layerElement);
 
@@ -88,7 +88,7 @@ void World::loadFromTMX(const std::string& filename) {
 void World::parseTileset(XMLElement* tilesetElement) {
     if (!tilesetElement) return;
 
-    int firstGid = tilesetElement->IntAttribute("firstgid", 1);
+    int firstGid = 0;
     XMLDocument tileSet;
 
     if (tileSet.LoadFile("../../../resources/dirt.tsx") != XML_SUCCESS) {
@@ -118,82 +118,107 @@ void World::parseTileset(XMLElement* tilesetElement) {
 }
 
 
+void World::fillWorld() {
+    tiles.resize(mapHeight, std::vector<int>(mapWidth, static_cast<int>(TileID::STONE)));
+    collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, true));  // stone = solid
+}
 
+void World::generateCaves(float fillProbability, int smoothingSteps) {
+    int caveAttempts = rand() % 60 + 40;  // 5 to 15 caves
+    int maxCaveWidth = 40;
+    int maxCaveHeight = 30;
 
-void World::generateMap(int width, int height) {
-    std::cout << "generate map called" << std::endl;
-    mapWidth = width;
-    mapHeight = height;
-    minChunkX = 0;
-    minChunkY = 0;
+    for (int i = 0; i < caveAttempts; ++i) {
+        int caveWidth = rand() % 25 + 15;   // 15 to 30
+        int caveHeight = rand() % 15 + 15;  // 10 to 20
 
-    int fillProbability = 35;
-    int iterations = 5;
+        int startX = rand() % (mapWidth - caveWidth);
+        int startY = rand() % (mapHeight - caveHeight);
 
-    tiles.resize(mapHeight, std::vector<int>(mapWidth, 0));
-    collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
-    std::cout << "collision map size and tile map size " << collisionMap.size() << tiles.size() << std::endl;
-    srand(static_cast<unsigned int>(time(nullptr)));
-
-    // Random initialization
-    for (int y = 0; y < mapHeight; y++) {
-        for (int x = 0; x < mapWidth; x++) {
-            if (y == 0 || y == mapHeight - 1 || x == 0 || x == mapWidth - 1) {
-                tiles[y][x] = static_cast<int>(TileID::STONE); // border always stone
-            }
-            else {
-                tiles[y][x] = (rand() % 100 < fillProbability) ? static_cast<int>(TileID::STONE) : static_cast<int>(TileID::AIR);
+        // Step 1: Random fill
+        std::vector<std::vector<bool>> temp(caveWidth, std::vector<bool>(caveHeight));
+        for (int y = 0; y < caveHeight; ++y) {
+            for (int x = 0; x < caveWidth; ++x) {
+                temp[x][y] = (rand() / (float)RAND_MAX) < fillProbability;
             }
         }
-    }
 
-    // Smooth the map
-    for (int step = 0; step < iterations; step++) {
-        std::vector<std::vector<int>> newTiles = tiles;
+        // Step 2: Cellular automata smoothing
+        for (int s = 0; s < 4; ++s) {
+            std::vector<std::vector<bool>> next = temp;
 
-        for (int y = 1; y < mapHeight - 1; y++) {
-            for (int x = 1; x < mapWidth - 1; x++) {
-                int wallCount = 0;
-                for (int dy = -1; dy <= 1; dy++) {
-                    for (int dx = -1; dx <= 1; dx++) {
-                        if (tiles[y + dy][x + dx] == static_cast<int>(TileID::STONE)) {
-                            wallCount++;
-                        }
+            for (int y = 1; y < caveHeight - 1; ++y) {
+                for (int x = 1; x < caveWidth - 1; ++x) {
+                    int walls = 0;
+                    for (int dy = -1; dy <= 1; ++dy)
+                        for (int dx = -1; dx <= 1; ++dx)
+                            if (temp[x + dx][y + dy]) walls++;
+
+                    next[x][y] = walls >= 5;
+                }
+            }
+
+            temp = next;
+        }
+
+        // Step 3: Apply to map
+        for (int y = 0; y < caveHeight; ++y) {
+            for (int x = 0; x < caveWidth; ++x) {
+                int mapX = startX + x;
+                int mapY = startY + y;
+
+                if (mapX >= 0 && mapX < mapWidth && mapY >= 0 && mapY < mapHeight) {
+                    if (temp[x][y]) {
+                        tiles[mapY][mapX] = static_cast<int>(TileID::STONE);
+                        collisionMap[mapY][mapX] = true;
+                    }
+                    else {
+                        tiles[mapY][mapX] = static_cast<int>(TileID::AIR);
+                        collisionMap[mapY][mapX] = false;
                     }
                 }
+            }
+        }
+    }
+}
 
-                // Apply cellular automata rules
-                if (wallCount >= 4) {
-                    newTiles[y][x] = static_cast<int>(TileID::STONE);
-                }
-                else {
-                    newTiles[y][x] = static_cast<int>(TileID::AIR);
+
+void World::generateOreVeins(int numVeins, int veinSize) {
+    for (int v = 0; v < numVeins; ++v) {
+        int x = rand() % mapWidth;
+        int y = rand() % mapHeight;
+
+        for (int i = 0; i < veinSize; ++i) {
+            int dx = x + (rand() % 3 - 1);
+            int dy = y + (rand() % 3 - 1);
+
+            if (dx >= 0 && dx < mapWidth && dy >= 0 && dy < mapHeight) {
+                if (tiles[dy][dx] == static_cast<int>(TileID::STONE)) {
+                    tiles[dy][dx] = static_cast<int>(TileID::ORE);
                 }
             }
         }
-
-        tiles = newTiles; // copy smoothed map
     }
-
-    // Step 3: Update collisionMap
-    for (int y = 0; y < mapHeight; y++) {
-        for (int x = 0; x < mapWidth; x++) {
-            collisionMap[y][x] = (tiles[y][x] == static_cast<int>(TileID::STONE));
-        }
-    }
-    std::cout << "mapHeight: " << mapHeight << ", mapWidth: " << mapWidth << std::endl;
-    std::cout << "collisionMap size: " << collisionMap.size() << " x "
-        << (collisionMap.empty() ? 0 : collisionMap[0].size()) << std::endl;
 }
 
 
 
 
 
+void World::generateMap(int width, int height) {
+ 
+    fillWorld();
+    generateCaves();
+    generateOreVeins();
+
+}
+
+
+
 
 //will use later
 
-/*
+
 void World::parseLayer(XMLElement* layerElement) {
 
 	std::cout << "starting parseLayer" << std::endl;
@@ -202,7 +227,7 @@ void World::parseLayer(XMLElement* layerElement) {
     XMLElement* dataElement = layerElement->FirstChildElement("data");
     if (!dataElement) return;
 
-    tiles.clear(); // Clear previous map data
+    customMap.clear(); // Clear previous map data
 
     minChunkX = INT_MAX;
     minChunkY = INT_MAX;
@@ -233,11 +258,11 @@ void World::parseLayer(XMLElement* layerElement) {
     }
 
     // Calculate correct map size
-    mapWidth = maxChunkX - minChunkX;
-    mapHeight = maxChunkY - minChunkY;
+    int customMapWidth = maxChunkX - minChunkX;
+    int customMapHeight = maxChunkY - minChunkY;
 
     //resize 2d vector, first arg = row, second arg = columns
-    tiles.resize(mapHeight, std::vector<int>(mapWidth, 0)); // Resize map dynamically
+    customMap.resize(customMapHeight, std::vector<bool>(customMapWidth)); // Resize map dynamically
 
     std::cout << "Determined Map Size: " << mapWidth << "x" << mapHeight << std::endl;
 
@@ -287,13 +312,8 @@ void World::parseLayer(XMLElement* layerElement) {
                 //put tile values in tiles array
 
                 if (globalX >= 0 && globalX < mapWidth && globalY >= 0 && globalY < mapHeight) {
-                    tiles[globalY][globalX] = tileValue;
+                    customMap[globalY][globalX] = collisionTileIDs.count(tileValue);
                     //std::cout << tileValue << std::endl;
-                    collisionMap.resize(mapHeight, std::vector<bool>(mapWidth, false));
-                    if (collisionTileIDs.count(tileValue) > 0) {
-                        collisionMap[globalY][globalX] = true;
-                    }
-
                 }
                 else {
                     std::cout << "Skipping out-of-bounds tile (" << globalX << ", " << globalY << ")" << std::endl;
@@ -301,23 +321,27 @@ void World::parseLayer(XMLElement* layerElement) {
             }
         }
     }
-    std::cout << "Final Map Representation (" << mapWidth << "x" << mapHeight << "):\n";
-    for (int y = 0; y < mapHeight; y++) {
-        for (int x = 0; x < mapWidth; x++) {
-            if (tiles[y][x] == 0) {
-                std::cout << "."; // Empty tile
-            }
-            else {
-                std::cout << tiles[y][x] % 10; // Print last digit of tile ID for clarity
+
+    for (int t = 0; t < customMapHeight; ++t) {
+        for (int g = 0; g < customMapWidth; ++g) {
+            int mapX = 50 + g;
+            int mapY = 30 + t;
+
+            if (mapX >= 0 && mapX < mapWidth && mapY >= 0 && mapY < mapHeight) {
+                if (customMap[t][g]) {
+                    tiles[mapY][mapX] = static_cast<int>(TileID::STONE);
+                    collisionMap[mapY][mapX] = true;
+                }
+                else {
+                    tiles[mapY][mapX] = static_cast<int>(TileID::AIR);
+                    collisionMap[mapY][mapX] = false;
+                }
             }
         }
-        std::cout << std::endl;
     }
-
-    
-    std::cout << "Successfully Loaded Infinite TMX Map!" << std::endl;
+  
 }
-*/
+
 
 
 
@@ -330,7 +354,7 @@ void World::breakTile(int x, int y, Inventory* inventory) {
     // Check if the tile is within bounds
     if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
         // Set the tile to 0 (empty)
-        if (tiles[tileY][tileX] == 22) {
+        if (tiles[tileY][tileX] == 21) {
                     inventory->addItem("stone", 1, "../../../resources/stone.png");
                     std::cout << "Tile at (" << tileX << ", " << tileY << ") broken." << std::endl;
                 }
@@ -422,6 +446,8 @@ void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
                             p.setdy(0);  // stop vertical velocity after vertical collision
                         }//end Y corrections
                         else {
+                            p.setHorozontalCollision(true);
+
                             //correct X position
                             //intersecting left side because if cell is to the left of player that means player width - cell position is positive
                             if (distX > 0) {
@@ -466,15 +492,17 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
             if (y >= 0 && y < tiles.size() && x >= 0 && x < tiles[0].size()){
 
             // if (x >= 0 && y >= 0 && x < tiles[0].size() && y < tiles.size()) {
-                int tileID = tiles[y][x]; // Y comes first in 2D arrays
+                int tileIDD = tiles[y][x]; // Y comes first in 2D arrays
 
-                if (tileID == 0) continue;  // Skip empty tiles
+                if (tileIDD == 0) continue;  // Skip empty tiles
 
                 //find the postion of tile inside the tileset texture
-                //get column index
-                float tileX = (tileID) % 8 * tileSize;  // Adjusting GID
+                //get column index  //20    /    2
+                //float tileX = ((tileIDD + 1) / (ceil(tileIDD / tileSize))) * 8;  // Adjusting GID
+                float tileX = (tileIDD % 16) * 16;  // Adjusting GID
+
                 //get row index
-                float tileY = floor((tileID) / tileSize) * tileSize;
+                float tileY = floor(tileIDD + 1 - (tileIDD % 16));
 
                 //portion of tileset imag eto be drawn
                 srcTile = { tileX, tileY, tileSize, tileSize };
