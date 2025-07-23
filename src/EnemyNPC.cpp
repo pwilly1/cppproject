@@ -7,7 +7,10 @@ EnemyNPC::EnemyNPC(int x, int y, SDL_Renderer* renderer, const std::string& imag
 
 void EnemyNPC::takeDamage(int dmg) {
     health -= dmg;
-    if (health < 0) health = 0;
+    if (health < 0) {
+        health = 0;
+
+    }
 }
 
 bool EnemyNPC::isAlive() const {

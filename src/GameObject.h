@@ -36,6 +36,7 @@ public:
     int getHeight() const { return height; }
     int getSpeed() const { return speed; }
     SDL_FRect getDestRect() { return destRect; }
+    int getHealth() { return health; };
 
     SDL_FRect srcRect, destRect;
 
@@ -46,7 +47,7 @@ protected:
     int width, height = 0;
     int dx = 0, dy = 0;
     int speed = 99;
-
+    int health = 100;
     float gravity = 400.0f;
 
     void applyPhysics(float deltaTime);

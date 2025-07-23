@@ -14,7 +14,7 @@ endif()
 
 
 # Add the source files
-add_executable(cppproject main.cpp "Game.cpp" "Game.h" "GameObject.cpp" "GameObject.h" "World.h" "World.cpp" "HUDManager.cpp" "HUDManager.h" "Inventory.cpp" "InventoryItem.h" "InventoryItem.cpp" "Player.cpp" "Player.h" "EnemyNPC.h" "EnemyNPC.cpp" "BasicEnemy.cpp" "BasicEnemy.h")
+add_executable(cppproject "src/main.cpp" "src/Game.cpp" "src/Game.h" "src/GameObject.cpp" "src/GameObject.h" "src/World.h" "src/World.cpp" "src/HUDManager.cpp" "src/HUDManager.h" "src/Inventory.cpp" "src/InventoryItem.h" "src/InventoryItem.cpp" "src/Player.cpp" "src/Player.h" "src/EnemyNPC.h" "src/EnemyNPC.cpp" "src/BasicEnemy.cpp" "src/BasicEnemy.h")
 
 # Find and Link SDL3
 find_package(SDL3 REQUIRED)

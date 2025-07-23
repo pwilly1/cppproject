@@ -126,25 +126,25 @@ void World::loadBackground(const std::string& path, const std::string& backgroun
         it->second = nullptr;
     }
     */
-    SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
-    if (!newTexture) {
-        std::cout << "Failed to load background from '" << path << "': " << SDL_GetError() << std::endl;
-        return;
+    if (!backgroundTextures.count(background)) {
+        SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
+        if (!newTexture) {
+            std::cout << "Failed to load background from '" << path << "': " << SDL_GetError() << std::endl;
+            return;
+        }
+        currentBackground = "cave";
+        backgroundTextures[background] = newTexture;
     }
-    currentBackground = "cave";
-    backgroundTextures[background] = newTexture;
 }
 
 
 void World::updateBackgroundForPlayer(float playerX, float playerY) {
     if (playerY < 200) {
-        std::cout << "surface background\n";
         loadBackground("resources/backgrounds/surface.png", "surface");
     }
     else {
-        std::cout << "cave background\n";
 
-        loadBackground("../../../resources/Background Cave/05 rocksfront.png", "cave");
+        loadBackground("../../../resources/Background Cave/stoneB2.png", "cave");
     }
 }
 
@@ -169,11 +169,24 @@ void World::generateCaves(float fillProbability, int smoothingSteps) {
 
         // Step 1: Random fill
         std::vector<std::vector<bool>> temp(caveWidth, std::vector<bool>(caveHeight));
+        float cx = caveWidth / 2.0f;
+        float cy = caveHeight / 2.0f;
+
         for (int y = 0; y < caveHeight; ++y) {
             for (int x = 0; x < caveWidth; ++x) {
-                temp[x][y] = (rand() / (float)RAND_MAX) < fillProbability;
+                float dx = (x - cx) / cx;
+                float dy = (y - cy) / cy;
+                float dist = dx * dx + dy * dy;
+
+                if (dist <= 1.0f && (rand() / (float)RAND_MAX) > fillProbability) {
+                    temp[x][y] = false;  // Air (carved)
+                }
+                else {
+                    temp[x][y] = true;   // Solid
+                }
             }
         }
+
 
         // Step 2: Cellular automata smoothing
         for (int s = 0; s < 4; ++s) {

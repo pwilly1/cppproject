@@ -100,18 +100,28 @@ void Game::handleEvents() {
 
 		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			SDL_MouseButtonFlags button = event.button.button;
-			//float mouseX;
-			//float mouseY;
-			//SDL_GetMouseState(&mouseX, &mouseY);
-			//Uint32 buttons = SDL_GetMouseState(&mouseX, &mouseY);
-			//SDL_BUTTON_LMASK is left mouse button mask that checks if left mouse button is being held down
+
+			float mouseX, mouseY;
+			SDL_GetMouseState(&mouseX, &mouseY);
+
+			// I have to add camera because mouse coordinates will be relative to the screen not the world
+			float worldX = mouseX / Gzoom + cameraX;
+			float worldY = mouseY / Gzoom + cameraY;
+
 			if (button == SDL_BUTTON_LEFT) {
 				std::cout << "left mouse pressed\n";
-				//std::cout << "mouse x: " << mouseX << "mouseY: " << mouseY << std::endl;
-				//mouseX += cameraX;
-				//mouseY += cameraY;
-				//world->breakTile(mouseX, mouseY);
+
+				int tileX = static_cast<int>(worldX) / 16;
+				int tileY = static_cast<int>(worldY) / 16;
+				int enemyTileX = static_cast<int>(enemy->getX()) / 16;
+				int enemyTileY = static_cast<int>(enemy->getY()) / 16;
+
+				if (tileX == enemyTileX && tileY == enemyTileY) {
+					enemy->takeDamage(50);
+					std::cout << "enemy health reduced to " << enemy->getHealth() << std::endl;
+				}
 			}
+
 			if (button == SDL_BUTTON_MIDDLE) {
 				std::cout << "middle mousepressed\n";
 			}
@@ -244,11 +254,6 @@ void Game::update(float deltaTime) {
 	float mouseX, mouseY;
 	Uint32 buttons = SDL_GetMouseState(&mouseX, &mouseY);
 	
-	/*if (inventory->getInventory()[inventory->getSelectedIndex()].name.empty()) {
-		player->setBreakMode(false);
-		player->setPlaceMode(false);
-	}
-	*/
 	if (buttons & SDL_BUTTON_LMASK) {
 		float worldX = mouseX / Gzoom + cameraX;
 		float worldY = mouseY / Gzoom + cameraY;

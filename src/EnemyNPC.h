@@ -28,7 +28,7 @@ public:
 
 
 protected:
-    int health = 100;
+
 };
 
 #endif
