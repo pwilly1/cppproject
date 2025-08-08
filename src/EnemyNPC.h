@@ -21,7 +21,7 @@ public:
     virtual ~EnemyNPC() {}
 
     virtual void update(float deltaTime) override = 0; // make abstract
-    void takeDamage(int dmg);
+    virtual void takeDamage(int dmg);
     bool isAlive() const;
 
     void chaseTarget(GameObject* target);

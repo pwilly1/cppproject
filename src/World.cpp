@@ -423,7 +423,7 @@ void World::placeTile(int x, int y, Inventory* inventory) {
 
     if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
         if (tiles[tileY][tileX] == 0) {
-            tiles[tileY][tileX] = 22;
+            tiles[tileY][tileX] = 21;
             collisionMap[tileY][tileX] = 1;
             inventory->removeItem("stone", 1);
 

@@ -13,6 +13,8 @@ void EnemyNPC::takeDamage(int dmg) {
     }
 }
 
+
+
 bool EnemyNPC::isAlive() const {
     return health > 0;
 }

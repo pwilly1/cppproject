@@ -70,7 +70,10 @@ void Game::render() {
 	world->updateBackgroundForPlayer(player->getX(), player->getY());
 	world->render(renderer, cameraX, cameraY, screenWidth, screenHeight);
 
-	enemy->render(renderer, cameraX, cameraY);
+	if (enemy != nullptr && enemy->isAlive()) {
+		enemy->render(renderer, cameraX, cameraY);
+	}
+	
 	player->render(renderer, cameraX, cameraY);
 	HUD->render(renderer);
 
@@ -248,7 +251,15 @@ void Game::run() {
 void Game::update(float deltaTime) {
 	
 	player->update(deltaTime);
-	enemy->update(deltaTime);
+	if (enemy != nullptr) {
+		enemy->update(deltaTime);
+
+		// Check if enemy died
+		if (!enemy->isAlive()) {
+			delete enemy;
+			enemy = nullptr;
+		}
+	}
 
 	// Check for mouse input to break tiles
 	float mouseX, mouseY;

@@ -8,6 +8,8 @@ public:
     BasicEnemy(int x, int y, SDL_Renderer* renderer, const std::string& imagePath, GameObject* target);
 
     void update(float deltaTime);
+    EnemyState getState() { return state; }
+
 
 
 private:

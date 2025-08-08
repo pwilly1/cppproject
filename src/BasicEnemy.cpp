@@ -5,8 +5,14 @@ BasicEnemy::BasicEnemy(int x, int y, SDL_Renderer* renderer, const std::string& 
     this->target = target;
 }
 
+
+
 void BasicEnemy::update(float deltaTime) {
 
+    if (!isAlive()) {
+        state = EnemyState::Dead;
+        return; 
+    }
     switch (state) {
     case EnemyState::Idle:
         setdx(0);
@@ -27,6 +33,7 @@ void BasicEnemy::update(float deltaTime) {
         break;
 
     case EnemyState::Dead:
+        
         setdx(0);  // Maybe fade out or stop updating
         return;    // Exit early
     }

@@ -3,20 +3,21 @@
 #include <iostream>
 
 Inventory::Inventory() {
-	addItem("pickaxe", 1, "../../../resources/fc1763.png");
-
+    inventoryVector.resize(10, InventoryItem{});   
+    addItem("pickaxe", 1, "../../../resources/fc1763.png");
 }
 
-
-void Inventory::addItem(const std::string& name, int amount, const std::string& filename) {
-
-	if (inventoryVector.size() <= 10) {
-		inventoryVector.push_back(InventoryItem(name, amount, filename));
-	}
-	else {
-		std::cout << "inventory full" << std::endl;
-	}
-} 
+void Inventory::addItem(const std::string& name,
+    int amount,
+    const std::string& filename) {
+    for (auto& slot : inventoryVector) {
+        if (slot.name.empty()) {
+            slot = InventoryItem(name, amount, filename);
+            return;   
+        }
+    }
+    std::cout << "inventory full\n";
+}
 
 void Inventory::removeItem(const std::string& name, int amount) {
 

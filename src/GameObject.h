@@ -17,6 +17,7 @@ public:
     virtual void update(float deltaTime);
     virtual void render(SDL_Renderer* renderer, float cameraX, float cameraY);
     void jump();
+    void destroy(GameObject* ob);
 
     void setVelocity(int dx, int dy);
     void setX(float x) { this->x = x; }

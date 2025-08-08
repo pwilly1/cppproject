@@ -102,6 +102,10 @@ bool GameObject::getIsJumping() {
     return isJumping;
 }
 
+void GameObject::destroy(GameObject* ob) {
+    delete ob;
+    ob = nullptr;
+}
 
 void GameObject::jump() {
     if (isOnGround == true) {
