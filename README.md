@@ -2,6 +2,8 @@
 
 This is my SDL3-based platformer game built with C++, SDL3, and TinyXML2.
 
+![Demo](resources/game-ezgif.com-video-to-gif-converter.gif)
+
 -----------------------------------------------------------------------------
 
 ## Requirements
