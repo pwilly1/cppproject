@@ -116,6 +116,7 @@ void Game::handleEvents() {
 
 				int tileX = static_cast<int>(worldX) / 16;
 				int tileY = static_cast<int>(worldY) / 16;
+				if (enemy != nullptr && enemy->isAlive()) {
 				int enemyTileX = static_cast<int>(enemy->getX()) / 16;
 				int enemyTileY = static_cast<int>(enemy->getY()) / 16;
 
@@ -123,6 +124,8 @@ void Game::handleEvents() {
 					enemy->takeDamage(50);
 					std::cout << "enemy health reduced to " << enemy->getHealth() << std::endl;
 				}
+				}
+
 			}
 
 			if (button == SDL_BUTTON_MIDDLE) {
