@@ -9,7 +9,7 @@ HUDManager::HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, 
 
 
 	srcBox = { 0, 0, 60, 60 };
-	inventoryBoxTexture = IMG_LoadTexture(renderer, "../resources/Elements/3-1.png");
+	inventoryBoxTexture = IMG_LoadTexture(renderer, "resources/Elements/3-1.png");
 	font = TTF_OpenFont("resources/Fonts/Heebo/static/Heebo-Regular.ttf", 20);
 	if (!font) {
 		std::cout << "font invalid" << SDL_GetError();
