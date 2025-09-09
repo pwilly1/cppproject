@@ -26,6 +26,8 @@ Handled automatically by vcpkg:
 
 ## Build Instructions
 
+*If you don't want to build it yourself there is a folder called builds with cppproject.exe inside. You can run that exe to play the game.*
+
 ### Clone the repository(NOT PORTABLE YET):
 
 ```bash
