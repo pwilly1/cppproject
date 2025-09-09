@@ -12,10 +12,10 @@
 using namespace tinyxml2;
 
 World::World(SDL_Renderer* renderer) {  
-    std::cout << "Attempting to load tileset texture from: ../../../resources/Cave Tiles/Cave Tiles.png" << std::endl;
+    std::cout << "Attempting to load tileset texture from: resources/Cave Tiles/Cave Tiles.png" << std::endl;
     std::cout << "Current Working Directory: " << std::filesystem::current_path() << std::endl;
     this->renderer = renderer;
-    tilesetTexture = IMG_LoadTexture(renderer, "C:/Users/prwil/source/repos/pwilly1/cppproject/resources/Cave Tiles/Cave Tiles.png");
+    tilesetTexture = IMG_LoadTexture(renderer, "resources/Cave Tiles/Cave Tiles.png");
     if (!tilesetTexture) {
         std::cout << "Failed to load tileset(world.cpp): " << SDL_GetError() << std::endl;
     }
@@ -91,7 +91,7 @@ void World::parseTileset(XMLElement* tilesetElement) {
     int firstGid = 0;
     XMLDocument tileSet;
 
-    if (tileSet.LoadFile("../../../resources/dirt.tsx") != XML_SUCCESS) {
+    if (tileSet.LoadFile("resources/dirt.tsx") != XML_SUCCESS) {
         std::cout << "Failed to load TMX file: " << "tileset" << std::endl;
         return;
     }
@@ -144,7 +144,7 @@ void World::updateBackgroundForPlayer(float playerX, float playerY) {
     }
     else {
 
-        loadBackground("../../../resources/Background Cave/stoneB2.png", "cave");
+        loadBackground("resources/Background Cave/stoneB2.png", "cave");
     }
 }
 
@@ -400,7 +400,7 @@ void World::breakTile(int x, int y, Inventory* inventory) {
     if (tileX >= 0 && tileX < mapWidth && tileY >= 0 && tileY < mapHeight) {
         // Set the tile to 0 (empty)
         if (tiles[tileY][tileX] == 21) {
-                    inventory->addItem("stone", 1, "../../../resources/stone.png");
+                    inventory->addItem("stone", 1, "resources/stone.png");
                     std::cout << "Tile at (" << tileX << ", " << tileY << ") broken." << std::endl;
                 }
         tiles[tileY][tileX] = 0;

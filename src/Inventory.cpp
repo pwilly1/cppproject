@@ -4,7 +4,7 @@
 
 Inventory::Inventory() {
     inventoryVector.resize(10, InventoryItem{});   
-    addItem("pickaxe", 1, "../../../resources/fc1763.png");
+    addItem("pickaxe", 1, "resources/fc1763.png");
 }
 
 void Inventory::addItem(const std::string& name,

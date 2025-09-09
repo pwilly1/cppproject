@@ -47,11 +47,11 @@ bool Game::init() {
 	HUD = new HUDManager(textEngine, renderer, HUDLocationX, HUDLocationY, inventory, screenWidth, screenHeight);
 
 	world = new World(renderer);
-	world->loadFromTMX("../../../resources/map.tmx");
+	world->loadFromTMX("resources/map.tmx");
 
 
-	player = new Player(1000, 700, renderer, "../../../resources/Heroes/Man/Naked/idle.png", inventory);
-	enemy = new BasicEnemy(1020, 700, renderer, "../../../resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
+	player = new Player(1000, 700, renderer, "resources/Heroes/Man/Naked/idle.png", inventory);
+	enemy = new BasicEnemy(1020, 700, renderer, "resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
 
 	return true;
 }

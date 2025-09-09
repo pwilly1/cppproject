@@ -16,22 +16,19 @@ endif()
 # Add the source files
 add_executable(cppproject "src/main.cpp" "src/Game.cpp" "src/Game.h" "src/GameObject.cpp" "src/GameObject.h" "src/World.h" "src/World.cpp" "src/HUDManager.cpp" "src/HUDManager.h" "src/Inventory.cpp" "src/InventoryItem.h" "src/InventoryItem.cpp" "src/Player.cpp" "src/Player.h" "src/EnemyNPC.h" "src/EnemyNPC.cpp" "src/BasicEnemy.cpp" "src/BasicEnemy.h")
 
-# Find and Link SDL3
-find_package(SDL3 REQUIRED)
-target_link_libraries(cppproject SDL3::SDL3)
+# SDL (use CONFIG mode)
+find_package(SDL3 REQUIRED CONFIG)
+find_package(SDL3_image REQUIRED CONFIG)
+find_package(SDL3_ttf REQUIRED CONFIG)
 
-# Find and Link SDL3_image
-set(CMAKE_PREFIX_PATH "C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows")
-include_directories("C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows/include")
-find_package(SDL3_image REQUIRED)
-target_link_libraries(cppproject SDL3_image::SDL3_image)
+# TinyXML2 (CONFIG mode, imported target)
+find_package(TinyXML2 REQUIRED CONFIG)
 
-# Find and Link TinyXML2 from vcpkg
-set(CMAKE_PREFIX_PATH "C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows")
-include_directories("C:/Users/prwil/source/repos/pwilly1/cppproject/vcpkg_installed/x64-windows/include")
-find_package(TinyXML2 REQUIRED)
-target_link_libraries(cppproject TinyXML2)
-
-find_package(SDL3_ttf REQUIRED)
-target_link_libraries(cppproject SDL3_ttf::SDL3_ttf)
+target_link_libraries(cppproject
+  PRIVATE
+    SDL3::SDL3
+    SDL3_image::SDL3_image
+    SDL3_ttf::SDL3_ttf
+    tinyxml2::tinyxml2
+)
 
