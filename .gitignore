@@ -139,3 +139,7 @@ vcpkg-manifest-install.log
 vcpkg_installed/
 
 .vs/
+
+### CMake ###
+build/
+out/

@@ -441,7 +441,7 @@ void World::placeTile(int x, int y, Inventory* inventory) {
 
 //AABB Wall Collision Detection
 
-void World::checkWallCollisons(GameObject& p, float cameraX, float cameraY) {
+void World::checkWallCollisions(GameObject& p, float cameraX, float cameraY) {
     //std::cout << "check wall collisions called";
     //setIsOnGround(false);
 

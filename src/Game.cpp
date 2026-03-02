@@ -13,8 +13,14 @@ Game::Game() {
 bool Game::init() {
 	running = true;
 
-	TTF_Init();
-	SDL_Init(SDL_INIT_VIDEO);
+	if (!TTF_Init()) {
+		std::cout << "TTF_Init Error: " << SDL_GetError() << std::endl;
+		return false;
+	}
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
+		return false;
+	}
 	
 	SDL_DisplayID displayID = SDL_GetPrimaryDisplay();
 	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayID);
@@ -224,29 +230,35 @@ void Game::handleEvents() {
 
 
 void Game::run() {
+	const float FIXED_TIMESTEP = 1.0f / 60.0f;
+	float accumulator = 0.0f;
 	Uint64 lastTime = SDL_GetTicks();
 
 	while (running) {
-		Uint64 currentTime= SDL_GetTicks();
+		Uint64 currentTime = SDL_GetTicks();
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 
-		//Had to add this because resizing screen Halts game loop
+		// Cap to prevent spiral of death after window resize stall
 		if (deltaTime > 0.05f) {
 			deltaTime = 0.05f;
 		}
 
-
-		update(deltaTime);
-		if (enemy) {
-			world->checkWallCollisons(*enemy, cameraX, cameraY);
-		}
-		if (player) {
-			world->checkWallCollisons(*player, cameraX, cameraY);
-		}
 		handleEvents();
+
+		accumulator += deltaTime;
+		while (accumulator >= FIXED_TIMESTEP) {
+			update(FIXED_TIMESTEP);
+			if (enemy) {
+				world->checkWallCollisions(*enemy, cameraX, cameraY);
+			}
+			if (player) {
+				world->checkWallCollisions(*player, cameraX, cameraY);
+			}
+			accumulator -= FIXED_TIMESTEP;
+		}
+
 		render();
-		
 	}
 	cleanup();	
 }

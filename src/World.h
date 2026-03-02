@@ -39,7 +39,7 @@ public:
     std::vector<int> getTileLocationsY() { return tileLocationsY; }
     int getMinChunkY() { return minChunkY;}
     int getMinChunkX() { return minChunkX; }
-    void checkWallCollisons(GameObject& p, float cameraX, float cameraY);
+    void checkWallCollisions(GameObject& p, float cameraX, float cameraY);
     void breakTile(int x, int y, Inventory* inventory);
     void placeTile(int x, int y, Inventory* inventory);
     void setIsOnGround(bool set) { ground = set; }

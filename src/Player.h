@@ -19,10 +19,8 @@ public:
 
 private:
     Inventory* inventory;
-    bool isJumping = false;
     bool breakMode = false;
     bool placeMode = false;
-    float jumpPower = 300.0f;
 };
 
 #endif

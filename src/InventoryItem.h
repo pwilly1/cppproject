@@ -1,7 +1,6 @@
 #ifndef INVENTORYITEM_H
 #define INVENTORYITEM_H
 #include <string>
-#pragma once
 
 struct InventoryItem {
     std::string name;
