@@ -3,6 +3,8 @@
 #include <string>
 
 struct InventoryItem {
+    static constexpr int MAX_STACK = 100;
+
     std::string name;
     int amount;
     std::string filename;

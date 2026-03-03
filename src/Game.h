@@ -8,6 +8,13 @@
 #include "HUDManager.h"
 #include "Inventory.h"
 
+enum class GameState {
+	Menu,
+	Playing,
+	Paused,
+	GameOver
+};
+
 class BasicEnemy;
 class Player;
 class World;
@@ -25,6 +32,8 @@ public:
 	void update(float deltaTime);
 
 private:
+	void renderOverlay(const std::string& title, const std::string& subtitle);
+	void reset();
 	float HUDLocationX = 10;
 	float HUDLocationY = 10;
 	BasicEnemy* enemy;
@@ -43,6 +52,9 @@ private:
 	SDL_Renderer* renderer;
 	SDL_Window* window = nullptr; //window pointer object that points to window created.
 	TTF_TextEngine* textEngine;
+	TTF_Font* stateFont = nullptr;
+	TTF_Font* stateFontSmall = nullptr;
+	GameState currentState = GameState::Menu;
 	bool running = false;
 
 

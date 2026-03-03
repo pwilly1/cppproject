@@ -59,6 +59,16 @@ bool Game::init() {
 	player = new Player(1000, 700, renderer, "resources/Heroes/Man/Naked/idle.png", inventory);
 	enemy = new BasicEnemy(1020, 700, renderer, "resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
 
+	stateFont = TTF_OpenFont("resources/font.ttf", 48);
+	if (!stateFont) {
+		stateFont = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 48);
+	}
+	stateFontSmall = TTF_OpenFont("resources/font.ttf", 24);
+	if (!stateFontSmall) {
+		stateFontSmall = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 24);
+	}
+
+	currentState = GameState::Menu;
 	return true;
 }
 
@@ -69,162 +79,113 @@ Game::~Game() {
 
 
 void Game::render() {
-
-	
-	//SDL_SetRenderDrawColor(renderer, 60, 34, 15, 255);
 	SDL_RenderClear(renderer);
+
 	world->updateBackgroundForPlayer(player->getX(), player->getY());
 	world->render(renderer, cameraX, cameraY, screenWidth, screenHeight);
 
-	if (enemy != nullptr && enemy->isAlive()) {
-		enemy->render(renderer, cameraX, cameraY);
+	if (currentState != GameState::Menu) {
+		if (enemy != nullptr && enemy->isAlive()) {
+			enemy->render(renderer, cameraX, cameraY);
+		}
+		player->render(renderer, cameraX, cameraY);
+		HUD->render(renderer);
 	}
-	
-	player->render(renderer, cameraX, cameraY);
-	HUD->render(renderer);
+
+	if (currentState == GameState::Menu) {
+		renderOverlay("My Game", "Press ENTER to Play");
+	} else if (currentState == GameState::Paused) {
+		renderOverlay("Paused", "ESC to Resume   |   Q to Quit");
+	} else if (currentState == GameState::GameOver) {
+		renderOverlay("Game Over", "Press ENTER to Restart");
+	}
 
 	SDL_RenderPresent(renderer);
-
 }
 
 void Game::handleEvents() {
-
-	//check for events
 	if (SDL_PollEvent(&event) > 0) {
 		if (event.type == SDL_EVENT_QUIT) {
 			running = false;
 		}
 
-
 		if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-			
 			SDL_GetWindowSize(window, &screenWidth, &screenHeight);
-
-			//Maintain proper aspect ratio on resize
 			SDL_SetRenderLogicalPresentation(renderer, screenWidth, screenHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
-
 			std::cout << "Window resized to: " << screenWidth << "x" << screenHeight << std::endl;
 		}
-	
 
-		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			SDL_MouseButtonFlags button = event.button.button;
-
-			float mouseX, mouseY;
-			SDL_GetMouseState(&mouseX, &mouseY);
-
-			// I have to add camera because mouse coordinates will be relative to the screen not the world
-			float worldX = mouseX / Gzoom + cameraX;
-			float worldY = mouseY / Gzoom + cameraY;
-
-			if (button == SDL_BUTTON_LEFT) {
-				std::cout << "left mouse pressed\n";
-
-				int tileX = static_cast<int>(worldX) / 16;
-				int tileY = static_cast<int>(worldY) / 16;
-				if (enemy != nullptr && enemy->isAlive()) {
-				int enemyTileX = static_cast<int>(enemy->getX()) / 16;
-				int enemyTileY = static_cast<int>(enemy->getY()) / 16;
-
-				if (tileX == enemyTileX && tileY == enemyTileY) {
-					enemy->takeDamage(50);
-					std::cout << "enemy health reduced to " << enemy->getHealth() << std::endl;
-				}
-				}
-
-			}
-
-			if (button == SDL_BUTTON_MIDDLE) {
-				std::cout << "middle mousepressed\n";
-			}
-			if (button == SDL_BUTTON_RIGHT) {
-				std::cout << "right mouse pressed\n";
-			}
-		}
-
-
-
-
-		//keyboard events
 		if (event.type == SDL_EVENT_KEY_DOWN) {
-
 			SDL_Keycode key = event.key.key;
 
-			if (key >= SDLK_1 && key <= SDLK_9) {
-				int index = key - SDLK_1; 
-				std::cout << "index: " <<  index << std::endl;
-				inventory->setSelectedIndex(index);
-				if (inventory->getItem().canBreak()) {
-					player->toggleBreakMode();
+			if (currentState == GameState::Menu) {
+				if (key == SDLK_RETURN) currentState = GameState::Playing;
+			}
+			else if (currentState == GameState::Paused) {
+				if (key == SDLK_ESCAPE) currentState = GameState::Playing;
+				if (key == SDLK_Q) running = false;
+			}
+			else if (currentState == GameState::GameOver) {
+				if (key == SDLK_RETURN) { reset(); currentState = GameState::Playing; }
+			}
+			else if (currentState == GameState::Playing) {
+				if (key == SDLK_ESCAPE) currentState = GameState::Paused;
+
+				if (key >= SDLK_1 && key <= SDLK_9) {
+					int index = key - SDLK_1;
+					std::cout << "index: " << index << std::endl;
+					inventory->setSelectedIndex(index);
+					if (inventory->getItem().canBreak()) { player->toggleBreakMode(); }
+					else { player->setBreakMode(false); }
+					if (inventory->getItem().canPlace()) { player->setPlaceMode(true); }
+					else { player->setPlaceMode(false); }
 				}
-				else {
-					player->setBreakMode(false);
-				}
-				if (inventory->getItem().canPlace()) {
-					player->setPlaceMode(true);
-				}
-				else {
-					player->setPlaceMode(false);
+				else if (key == SDLK_0) {
+					inventory->setSelectedIndex(9);
+					if (inventory->getItem().canBreak()) { player->toggleBreakMode(); }
+					else { player->setBreakMode(false); }
+					if (inventory->getItem().canPlace()) { player->setPlaceMode(true); }
+					else { player->setPlaceMode(false); }
 				}
 
-			}
-			else if (key == SDLK_0) {
-				inventory->setSelectedIndex(9);  // 0 key  index 9
-				if (inventory->getItem().canBreak()) {
-					player->toggleBreakMode();
-				}
-				else{
-					player->setBreakMode(false);
-				}
-				if (inventory->getItem().canPlace()) {
-					player->setPlaceMode(true);
-				}
-				else {
-					player->setPlaceMode(false);
-				}
-			}
-
-			if (key == SDLK_W) {
-				std::cout << "w key\n";
-				player->jump();
-				
-			}
-			if (key == SDLK_S) player->setVelocity(player->getdx(), player->getSpeed());   // Move Down
-
-			if (key == SDLK_A) {
-				player->setVelocity(-player->getSpeed(), player->getdy());  // Move Left
-			}
-			if (key == SDLK_D) {
-				player->setVelocity(player->getSpeed(), player->getdy());  // Move Right
-			}
-			if (key == SDLK_1) {
-				std::cout << "Break mode toggled" << std::endl;
-				//player->toggleBreakMode();
+				if (key == SDLK_W) player->jump();
+				if (key == SDLK_S) player->setVelocity(player->getdx(), player->getSpeed());
+				if (key == SDLK_A) player->setVelocity(-player->getSpeed(), player->getdy());
+				if (key == SDLK_D) player->setVelocity(player->getSpeed(), player->getdy());
 			}
 		}
 
-		//stop player movement when key is released
-		if (event.type == SDL_EVENT_KEY_UP) {
-			SDL_Keycode key = event.key.key;
-			if (key == SDLK_A && player->getdx() < 0) {
-				player->setVelocity(0, player->getdy());
-			}
-			if (key == SDLK_D && player->getdx() > 0) {
-				player->setVelocity(0, player->getdy());
-			}
-				
-			// If the key released is related to vertical movement, stop dy
-			if (key == SDLK_W && player->getdy() < 0) {
-				player->setVelocity(player->getdx(), 0);
-			}
-			if (key == SDLK_S && player->getdy() > 0) {
-				player->setVelocity(player->getdx(), 0);
+		if (currentState == GameState::Playing) {
+			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+				SDL_MouseButtonFlags button = event.button.button;
+				float mouseX, mouseY;
+				SDL_GetMouseState(&mouseX, &mouseY);
+				float worldX = mouseX / Gzoom + cameraX;
+				float worldY = mouseY / Gzoom + cameraY;
+
+				if (button == SDL_BUTTON_LEFT) {
+					int tileX = static_cast<int>(worldX) / 16;
+					int tileY = static_cast<int>(worldY) / 16;
+					if (enemy != nullptr && enemy->isAlive()) {
+						int enemyTileX = static_cast<int>(enemy->getX()) / 16;
+						int enemyTileY = static_cast<int>(enemy->getY()) / 16;
+						if (tileX == enemyTileX && tileY == enemyTileY) {
+							enemy->takeDamage(50);
+							std::cout << "enemy health reduced to " << enemy->getHealth() << std::endl;
+						}
+					}
+				}
 			}
 
+			if (event.type == SDL_EVENT_KEY_UP) {
+				SDL_Keycode key = event.key.key;
+				if (key == SDLK_A && player->getdx() < 0) player->setVelocity(0, player->getdy());
+				if (key == SDLK_D && player->getdx() > 0) player->setVelocity(0, player->getdy());
+				if (key == SDLK_W && player->getdy() < 0) player->setVelocity(player->getdx(), 0);
+				if (key == SDLK_S && player->getdy() > 0) player->setVelocity(player->getdx(), 0);
+			}
 		}
-
 	}
-
 }
 
 
@@ -264,7 +225,8 @@ void Game::run() {
 }
 
 void Game::update(float deltaTime) {
-	
+	if (currentState != GameState::Playing) return;
+
 	player->update(deltaTime);
 	if (enemy != nullptr) {
 		enemy->update(deltaTime);
@@ -307,10 +269,52 @@ void Game::update(float deltaTime) {
 	cameraX = floor(cameraX);
 	cameraY = floor(cameraY);
 
-	
-
+	if (player->getHealth() <= 0) {
+		currentState = GameState::GameOver;
+	}
 }
 
+
+void Game::renderOverlay(const std::string& title, const std::string& subtitle) {
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160);
+	SDL_FRect overlay = { 0, 0, static_cast<float>(screenWidth), static_cast<float>(screenHeight) };
+	SDL_RenderFillRect(renderer, &overlay);
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+	if (stateFont) {
+		TTF_Text* titleText = TTF_CreateText(textEngine, stateFont, title.c_str(), 0);
+		if (titleText) {
+			int w, h;
+			TTF_GetTextSize(titleText, &w, &h);
+			TTF_SetTextColor(titleText, 255, 255, 255, 255);
+			TTF_DrawRendererText(titleText, (screenWidth - w) / 2.0f, screenHeight / 2.0f - h - 10);
+			TTF_DestroyText(titleText);
+		}
+	}
+
+	if (stateFontSmall) {
+		TTF_Text* subText = TTF_CreateText(textEngine, stateFontSmall, subtitle.c_str(), 0);
+		if (subText) {
+			int w, h;
+			TTF_GetTextSize(subText, &w, &h);
+			TTF_SetTextColor(subText, 200, 200, 200, 255);
+			TTF_DrawRendererText(subText, (screenWidth - w) / 2.0f, screenHeight / 2.0f + 10);
+			TTF_DestroyText(subText);
+		}
+	}
+}
+
+void Game::reset() {
+	delete player;
+	player = new Player(1000, 700, renderer, "resources/Heroes/Man/Naked/idle.png", inventory);
+
+	delete enemy;
+	enemy = new BasicEnemy(1020, 700, renderer, "resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
+
+	cameraX = 0;
+	cameraY = 0;
+}
 
 void Game::cleanup() {
 	if (player) {
@@ -333,6 +337,14 @@ void Game::cleanup() {
 		inventory = nullptr;
 	}
 
+	if (stateFont) {
+		TTF_CloseFont(stateFont);
+		stateFont = nullptr;
+	}
+	if (stateFontSmall) {
+		TTF_CloseFont(stateFontSmall);
+		stateFontSmall = nullptr;
+	}
 	if (textEngine) {
 		TTF_DestroyRendererTextEngine(textEngine);
 		textEngine = nullptr;
