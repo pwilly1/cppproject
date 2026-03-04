@@ -38,6 +38,7 @@ public:
     int getSpeed() const { return speed; }
     SDL_FRect getDestRect() { return destRect; }
     int getHealth() { return health; };
+    void setHealth(int h) { health = h; }
 
     SDL_FRect srcRect, destRect;
 

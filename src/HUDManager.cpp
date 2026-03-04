@@ -14,6 +14,10 @@ HUDManager::HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, 
 	if (!font) {
 		std::cout << "font invalid" << SDL_GetError();
 	}
+	countFont = TTF_OpenFont("resources/Fonts/Heebo/static/Heebo-Regular.ttf", 12);
+	if (!countFont) {
+		std::cout << "countFont invalid" << SDL_GetError();
+	}
 	this->inventory = inventory;
 	this->screenWidth = screenWidth;
 	this->screenHeight = screenHeight;
@@ -25,47 +29,48 @@ HUDManager::HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, 
 
 void HUDManager::render(SDL_Renderer* renderer) {
 
-	int stoneCollected = 40;
-
-	std::string stone = std::to_string(stoneCollected);
-	char const* pchar = stone.c_str();  //use char const* as target type
-	char const* inv = "40";
-	int length = stone.length();
-	TTF_Text* text = TTF_CreateText(engine, font, pchar, length);
-	if (!text) {
-		std::cout << "text is null" << SDL_GetError();
-	}
-
-	if (!TTF_DrawRendererText(text, 10, 10)) {
-		std::cout << "cant render text" << SDL_GetError() << std::endl;
-	}
 	float boxX = (screenWidth / 2) - 200;
 	float boxY = screenHeight - 100;
 
+	// Draw slot backgrounds
 	for (int i = 0; i < 10; i++) {
-
-		int x = i;
-		x *= 40;
-		destBox = { boxX + static_cast<float>(x), boxY, 30, 30 };
-
+		destBox = { boxX + static_cast<float>(i * 40), boxY, 30, 30 };
 		SDL_RenderTexture(renderer, inventoryBoxTexture, &srcBox, &destBox);
 	}
-	 int itemX = 0;
-		for (auto inventoryItem : inventory->getInventory()) {
-			if (itemX < 10) {
-				int destX = itemX * 40;
 
-				inventoryItemTexture = IMG_LoadTexture(renderer, inventoryItem.filename.c_str());
+	// Draw item icons and stack counts
+	int itemX = 0;
+	for (auto& inventoryItem : inventory->getInventory()) {
+		if (itemX >= 10) break;
+
+		float slotX = boxX + itemX * 40;
+
+		if (!inventoryItem.name.empty()) {
+			// Draw item icon
+			SDL_Texture* itemTex = IMG_LoadTexture(renderer, inventoryItem.filename.c_str());
+			if (itemTex) {
 				SDL_FRect srcRect = { 0, 0, 64, 64 };
-				SDL_FRect destRect = { destX + boxX, boxY, 25, 25 };
-				SDL_RenderTexture(renderer, inventoryItemTexture, &srcRect, &destRect);
-				itemX++;
-				//std::cout << inventoryItem.name << std::endl;
+				SDL_FRect destRect = { slotX, boxY, 25, 25 };
+				SDL_RenderTexture(renderer, itemTex, &srcRect, &destRect);
+				SDL_DestroyTexture(itemTex);
 			}
-			else {
-				std::cout << "inventory full!" << std::endl;
+
+			// Draw stack count in bottom-right of slot
+			if (inventoryItem.amount > 1 && countFont) {
+				std::string countStr = std::to_string(inventoryItem.amount);
+				TTF_Text* countText = TTF_CreateText(engine, countFont, countStr.c_str(), 0);
+				if (countText) {
+					int tw, th;
+					TTF_GetTextSize(countText, &tw, &th);
+					TTF_SetTextColor(countText, 255, 255, 255, 255);
+					TTF_DrawRendererText(countText, slotX + 30 - tw, boxY + 30 - th);
+					TTF_DestroyText(countText);
+				}
 			}
 		}
+
+		itemX++;
+	}
 
 }
 
@@ -78,6 +83,10 @@ HUDManager::~HUDManager() {
 	if (font) {
 		TTF_CloseFont(font);
 		font = nullptr;
+	}
+	if (countFont) {
+		TTF_CloseFont(countFont);
+		countFont = nullptr;
 	}
 }
 

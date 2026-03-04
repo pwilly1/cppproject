@@ -42,6 +42,8 @@ public:
     void checkWallCollisions(GameObject& p, float cameraX, float cameraY);
     void breakTile(int x, int y, Inventory* inventory);
     void placeTile(int x, int y, Inventory* inventory);
+    void saveToXML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* root);
+    void loadFromXML(tinyxml2::XMLElement* worldElement);
     void setIsOnGround(bool set) { ground = set; }
     bool isOnGround();
 

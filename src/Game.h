@@ -19,6 +19,12 @@ class BasicEnemy;
 class Player;
 class World;
 class Game {
+	struct Button {
+		SDL_FRect rect;
+		std::string label;
+		bool hovered = false;
+		bool enabled = true;
+	};
 public:
 
 	Game();
@@ -33,7 +39,14 @@ public:
 
 private:
 	void renderOverlay(const std::string& title, const std::string& subtitle);
+	void renderMenu();
+	void renderPaused();
+	void renderButton(const Button& btn);
+	void updateButtonLayouts();
+	bool saveFileExists() const;
 	void reset();
+	void saveGame();
+	void loadGame();
 	float HUDLocationX = 10;
 	float HUDLocationY = 10;
 	BasicEnemy* enemy;
@@ -55,6 +68,9 @@ private:
 	TTF_Font* stateFont = nullptr;
 	TTF_Font* stateFontSmall = nullptr;
 	GameState currentState = GameState::Menu;
+	int logW = 800, logH = 800;
+	Button btnNewGame, btnLoadGame;
+	Button btnResume, btnSave, btnMainMenu, btnQuit;
 	bool running = false;
 
 

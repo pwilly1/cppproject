@@ -3,6 +3,12 @@
 #include <string>
 #include <vector>
 #include "InventoryItem.h"
+
+namespace tinyxml2 {
+	class XMLDocument;
+	class XMLElement;
+}
+
 class Inventory {
 
 
@@ -14,6 +20,9 @@ public:
 	InventoryItem getItem() { if (inventoryVector.empty()) return InventoryItem{}; return inventoryVector[selectedIndex]; }
 	void addItem(const std::string& name, int amount, const std::string& filename);
 	void removeItem(const std::string& name, int amount);
+	void clear();
+	void saveToXML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* root);
+	void loadFromXML(tinyxml2::XMLElement* inventoryElement);
 	const std::vector<InventoryItem> getInventory() { return inventoryVector; }
 
 

@@ -612,6 +612,53 @@ void World::render(SDL_Renderer* renderer, int cameraX, int cameraY, int screenW
     // Reset color to white after rendering collision map
 }
 
+void World::saveToXML(XMLDocument& doc, XMLElement* root) {
+    XMLElement* worldEl = doc.NewElement("world");
+    worldEl->SetAttribute("width", mapWidth);
+    worldEl->SetAttribute("height", mapHeight);
+
+    std::string tileData;
+    tileData.reserve(mapWidth * mapHeight * 3);
+    for (int y = 0; y < mapHeight; y++) {
+        for (int x = 0; x < mapWidth; x++) {
+            tileData += std::to_string(tiles[y][x]);
+            if (x < mapWidth - 1 || y < mapHeight - 1) tileData += ",";
+        }
+    }
+
+    XMLElement* tilesEl = doc.NewElement("tiles");
+    tilesEl->SetText(tileData.c_str());
+    worldEl->InsertEndChild(tilesEl);
+    root->InsertEndChild(worldEl);
+}
+
+void World::loadFromXML(XMLElement* worldElement) {
+    if (!worldElement) return;
+
+    int w = worldElement->IntAttribute("width", mapWidth);
+    int h = worldElement->IntAttribute("height", mapHeight);
+    mapWidth = w;
+    mapHeight = h;
+
+    tiles.assign(h, std::vector<int>(w, 0));
+    collisionMap.assign(h, std::vector<bool>(w, false));
+
+    XMLElement* tilesEl = worldElement->FirstChildElement("tiles");
+    if (!tilesEl || !tilesEl->GetText()) return;
+
+    std::istringstream stream(tilesEl->GetText());
+    std::string val;
+    for (int y = 0; y < mapHeight; y++) {
+        for (int x = 0; x < mapWidth; x++) {
+            if (!std::getline(stream, val, ',')) break;
+            int tileID = std::stoi(val);
+            tiles[y][x] = tileID;
+            collisionMap[y][x] = (tileID != 0);
+        }
+    }
+    std::cout << "World loaded from save.\n";
+}
+
 
 
 

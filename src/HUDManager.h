@@ -17,6 +17,7 @@ private:
 	SDL_FRect destBox;
 	SDL_Texture* inventoryBoxTexture;
 	TTF_Font* font;
+	TTF_Font* countFont;
 	TTF_TextEngine* engine;
 	SDL_Texture* inventoryItemTexture;
 	float x;
