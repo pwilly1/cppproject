@@ -1,4 +1,5 @@
 #include "HUDManager.h"
+#include "Player.h"
 #include <iostream>
 #include <string>
 #include <SDL3_image/SDL_image.h>
@@ -28,6 +29,48 @@ HUDManager::HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, 
 }
 
 void HUDManager::render(SDL_Renderer* renderer) {
+
+	// Health bar - top left
+	if (player) {
+		int hp = player->getHealth();
+		if (hp < 0) hp = 0;
+		const float barX = 10.0f, barY = 10.0f;
+		const float barW = 130.0f, barH = 16.0f;
+		float fill = hp / 100.0f;
+
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+		// Background
+		SDL_SetRenderDrawColor(renderer, 60, 0, 0, 200);
+		SDL_FRect bgRect = { barX, barY, barW, barH };
+		SDL_RenderFillRect(renderer, &bgRect);
+
+		// Fill — green above 50%, yellow 25-50%, red below 25%
+		if (hp > 50)
+			SDL_SetRenderDrawColor(renderer, 50, 180, 50, 255);
+		else if (hp > 25)
+			SDL_SetRenderDrawColor(renderer, 210, 180, 40, 255);
+		else
+			SDL_SetRenderDrawColor(renderer, 210, 45, 45, 255);
+		SDL_FRect fillRect = { barX, barY, barW * fill, barH };
+		SDL_RenderFillRect(renderer, &fillRect);
+
+		// Border
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 120);
+		SDL_RenderRect(renderer, &bgRect);
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+		// HP text
+		if (countFont) {
+			std::string hpStr = "HP  " + std::to_string(hp) + " / 100";
+			TTF_Text* hpText = TTF_CreateText(engine, countFont, hpStr.c_str(), 0);
+			if (hpText) {
+				TTF_SetTextColor(hpText, 255, 255, 255, 255);
+				TTF_DrawRendererText(hpText, barX + 3.0f, barY + 2.0f);
+				TTF_DestroyText(hpText);
+			}
+		}
+	}
 
 	float boxX = (screenWidth / 2) - 200;
 	float boxY = screenHeight - 100;

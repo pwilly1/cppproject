@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 class Inventory;
+class Player;
 
 
 class HUDManager {
@@ -10,9 +11,11 @@ public:
 	HUDManager(TTF_TextEngine* engine, SDL_Renderer* renderer, float x, float y, Inventory* inventory, int screenWidth, int screenHeight);
 	~HUDManager();
 	void render(SDL_Renderer* renderer);
+	void setPlayer(Player* p) { player = p; }
 
 private:
 	Inventory* inventory;
+	Player* player = nullptr;
 	SDL_FRect srcBox;
 	SDL_FRect destBox;
 	SDL_Texture* inventoryBoxTexture;

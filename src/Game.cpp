@@ -59,6 +59,7 @@ bool Game::init() {
 
 	player = new Player(1000, 700, renderer, "resources/Heroes/Man/Naked/idle.png", inventory);
 	enemy = new BasicEnemy(1020, 700, renderer, "resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
+	HUD->setPlayer(player);
 
 	stateFont = TTF_OpenFont("resources/font.ttf", 48);
 	if (!stateFont) {
@@ -130,14 +131,16 @@ void Game::handleEvents() {
 				return x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 			};
 			if (currentState == GameState::Menu) {
-				btnNewGame.hovered  = inRect(btnNewGame.rect,  lx, ly);
-				btnLoadGame.hovered = inRect(btnLoadGame.rect, lx, ly) && btnLoadGame.enabled;
-			} else if (currentState == GameState::Paused) {
-				btnResume.hovered   = inRect(btnResume.rect,   lx, ly);
-				btnSave.hovered     = inRect(btnSave.rect,     lx, ly);
-				btnMainMenu.hovered = inRect(btnMainMenu.rect, lx, ly);
-				btnQuit.hovered     = inRect(btnQuit.rect,     lx, ly);
-			}
+					btnNewGame.hovered = inRect(btnNewGame.rect, lx, ly);
+					for (int i = 0; i < 3; i++)
+						btnLoadSlot[i].hovered = inRect(btnLoadSlot[i].rect, lx, ly) && btnLoadSlot[i].enabled;
+				} else if (currentState == GameState::Paused) {
+					btnResume.hovered   = inRect(btnResume.rect,   lx, ly);
+					for (int i = 0; i < 3; i++)
+						btnSaveSlot[i].hovered = inRect(btnSaveSlot[i].rect, lx, ly);
+					btnMainMenu.hovered = inRect(btnMainMenu.rect, lx, ly);
+					btnQuit.hovered     = inRect(btnQuit.rect,     lx, ly);
+				}
 		}
 
 		// Button clicks for menu and pause
@@ -151,15 +154,20 @@ void Game::handleEvents() {
 				if (inRect(btnNewGame.rect, lx, ly)) {
 					reset();
 					currentState = GameState::Playing;
-				} else if (inRect(btnLoadGame.rect, lx, ly) && btnLoadGame.enabled) {
-					loadGame();
-					currentState = GameState::Playing;
+				}
+				for (int i = 0; i < 3; i++) {
+					if (inRect(btnLoadSlot[i].rect, lx, ly) && btnLoadSlot[i].enabled) {
+						loadGame(i + 1);
+						currentState = GameState::Playing;
+					}
 				}
 			} else if (currentState == GameState::Paused) {
-				if      (inRect(btnResume.rect,   lx, ly)) { currentState = GameState::Playing; }
-				else if (inRect(btnSave.rect,     lx, ly)) { saveGame(); }
-				else if (inRect(btnMainMenu.rect, lx, ly)) { currentState = GameState::Menu; }
-				else if (inRect(btnQuit.rect,     lx, ly)) { running = false; }
+				if (inRect(btnResume.rect,   lx, ly)) { currentState = GameState::Playing; }
+				for (int i = 0; i < 3; i++) {
+					if (inRect(btnSaveSlot[i].rect, lx, ly)) { saveGame(i + 1); }
+				}
+				if (inRect(btnMainMenu.rect, lx, ly)) { currentState = GameState::Menu; }
+				if (inRect(btnQuit.rect,     lx, ly)) { running = false; }
 			}
 		}
 
@@ -170,15 +178,12 @@ void Game::handleEvents() {
 				if (key == SDLK_RETURN) { reset(); currentState = GameState::Playing; }
 			} else if (currentState == GameState::Paused) {
 				if (key == SDLK_ESCAPE) currentState = GameState::Playing;
-				if (key == SDLK_S) saveGame();
 				if (key == SDLK_M) currentState = GameState::Menu;
 				if (key == SDLK_Q) running = false;
 			} else if (currentState == GameState::GameOver) {
 				if (key == SDLK_RETURN) { reset(); currentState = GameState::Playing; }
 			} else if (currentState == GameState::Playing) {
 				if (key == SDLK_ESCAPE) currentState = GameState::Paused;
-				if (key == SDLK_F5) saveGame();
-				if (key == SDLK_F9) loadGame();
 
 				if (key >= SDLK_1 && key <= SDLK_9) {
 					int index = key - SDLK_1;
@@ -366,27 +371,34 @@ void Game::reset() {
 
 	player = new Player(1000, 700, renderer, "resources/Heroes/Man/Naked/idle.png", inventory);
 	enemy = new BasicEnemy(1020, 700, renderer, "resources/Heroes/Knight/Idle/Idle-Sheet.png", player);
+	HUD->setPlayer(player);
 
 	cameraX = 0;
 	cameraY = 0;
 }
 
 void Game::updateButtonLayouts() {
-	const float bw = 200.0f, bh = 45.0f;
+	const float bw = 220.0f, bh = 45.0f;
 	float cx = logW / 2.0f;
 	float cy = logH / 2.0f;
 
-	btnNewGame  = { {cx - bw / 2, cy - 10,  bw, bh}, "New Game" };
-	btnLoadGame = { {cx - bw / 2, cy + 55,  bw, bh}, "Load Game" };
+	// Menu: New Game + 3 load slots, vertically centered
+	btnNewGame     = { {cx - bw / 2, cy - 105, bw, bh}, "New Game" };
+	btnLoadSlot[0] = { {cx - bw / 2, cy - 50,  bw, bh}, "Load Slot 1" };
+	btnLoadSlot[1] = { {cx - bw / 2, cy + 5,   bw, bh}, "Load Slot 2" };
+	btnLoadSlot[2] = { {cx - bw / 2, cy + 60,  bw, bh}, "Load Slot 3" };
 
-	btnResume   = { {cx - bw / 2, cy - 100, bw, bh}, "Resume" };
-	btnSave     = { {cx - bw / 2, cy - 45,  bw, bh}, "Save" };
-	btnMainMenu = { {cx - bw / 2, cy + 10,  bw, bh}, "Main Menu" };
-	btnQuit     = { {cx - bw / 2, cy + 65,  bw, bh}, "Quit" };
+	// Pause: Resume + 3 save slots + Main Menu + Quit, vertically centered
+	btnResume      = { {cx - bw / 2, cy - 160, bw, bh}, "Resume" };
+	btnSaveSlot[0] = { {cx - bw / 2, cy - 105, bw, bh}, "Save Slot 1" };
+	btnSaveSlot[1] = { {cx - bw / 2, cy - 50,  bw, bh}, "Save Slot 2" };
+	btnSaveSlot[2] = { {cx - bw / 2, cy + 5,   bw, bh}, "Save Slot 3" };
+	btnMainMenu    = { {cx - bw / 2, cy + 60,  bw, bh}, "Main Menu" };
+	btnQuit        = { {cx - bw / 2, cy + 115, bw, bh}, "Quit" };
 }
 
-bool Game::saveFileExists() const {
-	return std::filesystem::exists("save.xml");
+bool Game::saveFileExists(int slot) const {
+	return std::filesystem::exists("save" + std::to_string(slot) + ".xml");
 }
 
 void Game::renderButton(const Button& btn) {
@@ -431,14 +443,16 @@ void Game::renderMenu() {
 			int w, h;
 			TTF_GetTextSize(title, &w, &h);
 			TTF_SetTextColor(title, 255, 255, 255, 255);
-			TTF_DrawRendererText(title, (logW - w) / 2.0f, logH / 2.0f - 130);
+			TTF_DrawRendererText(title, (logW - w) / 2.0f, logH / 2.0f - 175);
 			TTF_DestroyText(title);
 		}
 	}
 
-	btnLoadGame.enabled = saveFileExists();
 	renderButton(btnNewGame);
-	renderButton(btnLoadGame);
+	for (int i = 0; i < 3; i++) {
+		btnLoadSlot[i].enabled = saveFileExists(i + 1);
+		renderButton(btnLoadSlot[i]);
+	}
 }
 
 void Game::renderPaused() {
@@ -454,18 +468,19 @@ void Game::renderPaused() {
 			int w, h;
 			TTF_GetTextSize(title, &w, &h);
 			TTF_SetTextColor(title, 255, 255, 255, 255);
-			TTF_DrawRendererText(title, (logW - w) / 2.0f, logH / 2.0f - 160);
+			TTF_DrawRendererText(title, (logW - w) / 2.0f, logH / 2.0f - 225);
 			TTF_DestroyText(title);
 		}
 	}
 
 	renderButton(btnResume);
-	renderButton(btnSave);
+	for (int i = 0; i < 3; i++)
+		renderButton(btnSaveSlot[i]);
 	renderButton(btnMainMenu);
 	renderButton(btnQuit);
 }
 
-void Game::saveGame() {
+void Game::saveGame(int slot) {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* root = doc.NewElement("save");
 	doc.InsertFirstChild(root);
@@ -479,17 +494,19 @@ void Game::saveGame() {
 	inventory->saveToXML(doc, root);
 	world->saveToXML(doc, root);
 
-	if (doc.SaveFile("save.xml") == tinyxml2::XML_SUCCESS) {
-		std::cout << "Game saved.\n";
+	std::string filename = "save" + std::to_string(slot) + ".xml";
+	if (doc.SaveFile(filename.c_str()) == tinyxml2::XML_SUCCESS) {
+		std::cout << "Game saved to slot " << slot << ".\n";
 	} else {
 		std::cout << "Failed to save game.\n";
 	}
 }
 
-void Game::loadGame() {
+void Game::loadGame(int slot) {
 	tinyxml2::XMLDocument doc;
-	if (doc.LoadFile("save.xml") != tinyxml2::XML_SUCCESS) {
-		std::cout << "No save file found.\n";
+	std::string filename = "save" + std::to_string(slot) + ".xml";
+	if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS) {
+		std::cout << "No save file found for slot " << slot << ".\n";
 		return;
 	}
 

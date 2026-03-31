@@ -43,10 +43,10 @@ private:
 	void renderPaused();
 	void renderButton(const Button& btn);
 	void updateButtonLayouts();
-	bool saveFileExists() const;
+	bool saveFileExists(int slot) const;
 	void reset();
-	void saveGame();
-	void loadGame();
+	void saveGame(int slot);
+	void loadGame(int slot);
 	float HUDLocationX = 10;
 	float HUDLocationY = 10;
 	BasicEnemy* enemy;
@@ -69,8 +69,11 @@ private:
 	TTF_Font* stateFontSmall = nullptr;
 	GameState currentState = GameState::Menu;
 	int logW = 800, logH = 800;
-	Button btnNewGame, btnLoadGame;
-	Button btnResume, btnSave, btnMainMenu, btnQuit;
+	Button btnNewGame;
+	Button btnLoadSlot[3];
+	Button btnResume;
+	Button btnSaveSlot[3];
+	Button btnMainMenu, btnQuit;
 	bool running = false;
 
 
